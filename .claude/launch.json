@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["/Users/evansiu/Vibe Coding/Claude/GridPulse/.claude/start-backend.sh"],
+      "port": 8000
+    },
+    {
+      "name": "frontend",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["/Users/evansiu/Vibe Coding/Claude/GridPulse/.claude/start-frontend.sh"],
+      "port": 5173
+    }
+  ]
+}
