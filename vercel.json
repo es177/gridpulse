@@ -6,24 +6,6 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index" }
   ],
-  "crons": [
-    {
-      "path": "/api/cron/eia",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/nrc",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/cron/policy",
-      "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/cron/investments",
-      "schedule": "0 */12 * * *"
-    }
-  ],
   "functions": {
     "api/index.py": {
       "memory": 1024,
