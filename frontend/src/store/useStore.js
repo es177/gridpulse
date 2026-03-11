@@ -55,6 +55,10 @@ const useStore = create((set, get) => ({
       mapLayers: { ...get().mapLayers, [layer]: !get().mapLayers[layer] },
     }),
 
+  // Refresh state
+  refreshing: false,
+  lastRefreshed: null,
+
   // Modal
   selectedEvent: null,
   setSelectedEvent: (event) => set({ selectedEvent: event }),
@@ -137,6 +141,7 @@ const useStore = create((set, get) => ({
 
   // Fetch all data
   fetchAll: async () => {
+    set({ refreshing: true })
     const state = get()
     await Promise.all([
       state.fetchSummary(),
@@ -146,6 +151,7 @@ const useStore = create((set, get) => ({
       state.fetchPolicy(),
       state.fetchInvestments(),
     ])
+    set({ refreshing: false, lastRefreshed: Date.now() })
   },
 }))
 

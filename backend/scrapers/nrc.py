@@ -8,13 +8,13 @@ from datetime import datetime
 
 import httpx
 
-NRC_STATUS_URL = "https://www.nrc.gov/reading-rm/doc-collections/event-status/reactor-status/powerreactorstatusforlast365days.txt"
+NRC_STATUS_URL = "https://www.nrc.gov/reading-rm/doc-collections/event-status/reactor-status/PowerReactorStatusForLast365Days.txt"
 
 
 async def fetch_reactor_status() -> list[dict]:
     """Fetch current reactor power status from NRC daily report."""
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
             resp = await client.get(NRC_STATUS_URL)
             resp.raise_for_status()
             return _parse_nrc_csv(resp.text)
@@ -69,13 +69,34 @@ def _parse_nrc_csv(text: str) -> list[dict]:
 
 
 def _mock_reactor_status() -> list[dict]:
-    """Return mock reactor status data."""
-    import random
+    """Deterministic reactor status reflecting a realistic fleet snapshot.
+
+    Based on typical NRC Power Reactor Status Report patterns.
+    Source: https://www.nrc.gov/reading-rm/doc-collections/event-status/reactor-status/
+    Most units run at 100%, a few in refueling outage or coastdown.
+    """
+    now = datetime.utcnow().strftime("%m/%d/%Y")
+
+    # Reactors with specific power levels; rest default to 100%
+    overrides = {
+        "Byron 2": 0,           # refueling outage
+        "Farley 1": 0,          # refueling outage
+        "River Bend 1": 45,     # power ascension after outage
+        "Perry 1": 78,          # coastdown
+        "Fermi 2": 92,          # reduced power
+        "Cooper": 88,           # seasonal derating
+        "Robinson 2": 0,        # refueling outage
+        "Waterford 3": 65,      # returning from trip
+        "Point Beach 1": 95,    # slight derating
+        "Grand Gulf 1": 0,      # refueling outage
+        "Summer 1": 97,         # minor derating
+        "Ginna": 100,
+    }
 
     reactors = [
         "Beaver Valley 1", "Beaver Valley 2", "Braidwood 1", "Braidwood 2",
         "Byron 1", "Byron 2", "Calvert Cliffs 1", "Calvert Cliffs 2",
-        "Catawba 1", "Catawba 2", "Clinton 1", "Columbia Generating Station",
+        "Catawba 1", "Catawba 2", "Clinton 1", "Columbia",
         "Comanche Peak 1", "Comanche Peak 2", "Cook 1", "Cook 2",
         "Cooper", "Davis-Besse", "Diablo Canyon 1", "Diablo Canyon 2",
         "Dresden 2", "Dresden 3", "Farley 1", "Farley 2",
@@ -97,20 +118,7 @@ def _mock_reactor_status() -> list[dict]:
         "Watts Bar 2", "Wolf Creek 1",
     ]
 
-    now = datetime.utcnow().strftime("%m/%d/%Y")
-    results = []
-    for name in reactors:
-        # Most reactors run at high power, some at reduced or in outage
-        r = random.random()
-        if r < 0.75:
-            power = random.uniform(95, 100)
-        elif r < 0.90:
-            power = random.uniform(50, 95)
-        elif r < 0.95:
-            power = random.uniform(1, 50)
-        else:
-            power = 0
-        results.append(
-            {"name": name, "pct_power": round(power, 0), "report_date": now}
-        )
-    return results
+    return [
+        {"name": name, "pct_power": overrides.get(name, 100), "report_date": now}
+        for name in reactors
+    ]

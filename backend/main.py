@@ -5,7 +5,7 @@ import json
 import os
 import sys
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -51,10 +51,18 @@ async def lifespan(app: FastAPI):
     seed()
     print("[GridPulse] Seed data loaded")
 
-    # Run initial data fetch
-    await sync_eia_data()
-    await sync_nrc_data()
-    print("[GridPulse] Initial data sync complete")
+    # Run initial data fetch only if no recent data exists
+    db = SessionLocal()
+    try:
+        latest = db.query(func.max(GridSnapshot.timestamp)).scalar()
+        if not latest or (datetime.utcnow() - latest) > timedelta(minutes=5):
+            await sync_eia_data()
+            await sync_nrc_data()
+            print("[GridPulse] Initial data sync complete")
+        else:
+            print("[GridPulse] Recent data exists, skipping initial sync")
+    finally:
+        db.close()
 
     # Start background scheduler
     start_scheduler()

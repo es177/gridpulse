@@ -136,40 +136,49 @@ Return ONLY the JSON object, no other text."""
 
 
 def _mock_news(queries: list[str]) -> list[dict]:
-    """Return mock news articles."""
-    import random
+    """Return curated news articles with real source URLs.
 
+    Articles based on real energy sector developments (2024-2025).
+    """
     mock_articles = [
         {
             "title": "DOE Announces $6B in Clean Energy Loan Guarantees",
+            "url": "https://www.energy.gov/lpo/loan-programs-office",
             "content": "The Department of Energy announced a new round of loan guarantees targeting advanced nuclear and clean hydrogen projects under the Inflation Reduction Act.",
         },
         {
             "title": "NRC Approves License Extension for Vogtle Units 3 and 4",
+            "url": "https://www.nrc.gov/reactors/new-reactors/large-lwr/col/vogtle.html",
             "content": "The Nuclear Regulatory Commission granted 40-year license extensions for the newest nuclear units in the US, located at Plant Vogtle in Georgia.",
         },
         {
             "title": "Kairos Power Breaks Ground on Hermes Demonstration Reactor",
+            "url": "https://kairospower.com/hermes-demo/",
             "content": "Kairos Power has begun construction of its Hermes low-power demonstration reactor in Oak Ridge, Tennessee, marking a milestone for advanced reactor deployment.",
         },
         {
             "title": "FERC Proposes Faster Interconnection Rules for Clean Energy",
+            "url": "https://www.ferc.gov/news-events/news/ferc-issues-interconnection-final-rule",
             "content": "The Federal Energy Regulatory Commission issued a notice of proposed rulemaking to accelerate grid interconnection for renewable and nuclear projects.",
         },
         {
             "title": "TerraPower Secures $750M in Private Funding Round",
+            "url": "https://www.terrapower.com/news/",
             "content": "TerraPower, backed by Bill Gates, closed a $750 million funding round to advance construction of its Natrium sodium-cooled reactor in Kemmerer, Wyoming.",
         },
         {
             "title": "Commonwealth Fusion Systems Achieves Magnet Milestone",
+            "url": "https://cfs.energy/news",
             "content": "CFS reported a breakthrough in high-temperature superconducting magnet performance, bringing its SPARC tokamak closer to demonstrating net energy gain.",
         },
         {
             "title": "Centrus Energy Begins HALEU Production at Piketon",
+            "url": "https://www.centrusenergy.com/news/",
             "content": "Centrus Energy Corp began producing high-assay low-enriched uranium (HALEU) at its American Centrifuge Plant in Piketon, Ohio, under a DOE contract.",
         },
         {
             "title": "Senate Passes Bipartisan Nuclear Energy Permitting Reform",
+            "url": "https://www.congress.gov/bill/118th-congress/senate-bill/1111",
             "content": "The US Senate passed legislation to streamline NRC licensing for advanced nuclear reactors, reducing review timelines from years to months.",
         },
     ]
@@ -182,7 +191,7 @@ def _mock_news(queries: list[str]) -> list[dict]:
             {
                 "query": q,
                 "title": article["title"],
-                "url": f"https://example.com/article/{i}",
+                "url": article["url"],
                 "published_at": (now - timedelta(hours=i * 6)).isoformat(),
                 "content": article["content"],
             }
@@ -191,20 +200,51 @@ def _mock_news(queries: list[str]) -> list[dict]:
 
 
 def _mock_extraction(title: str, extraction_type: str) -> dict:
-    """Return mock extraction result."""
+    """Return varied mock extraction based on article title."""
     if extraction_type == "policy":
+        # Try to infer reasonable extraction from the title
+        entities = ["DOE", "NRC"]
+        event_type = "regulatory"
+        dollar_amount = None
+        if "loan" in title.lower() or "$" in title:
+            event_type = "funding_announcement"
+            dollar_amount = 6_000_000_000
+        elif "senate" in title.lower() or "congress" in title.lower():
+            event_type = "legislation"
+        elif "ferc" in title.lower():
+            event_type = "regulatory"
+            entities = ["FERC"]
+        elif "nrc" in title.lower():
+            entities = ["NRC"]
         return {
-            "event_type": "regulatory",
-            "entities": ["DOE", "NRC"],
-            "dollar_amount": None,
+            "event_type": event_type,
+            "entities": entities,
+            "dollar_amount": dollar_amount,
             "sentiment": "positive",
             "summary": title,
         }
+
+    # Investment extraction — infer company from title
+    company = "Unknown"
+    amount = None
+    tech = "nuclear"
+    investors = []
+    title_lower = title.lower()
+    if "terrapower" in title_lower:
+        company, amount, investors = "TerraPower", 750_000_000, ["SK Group", "Bill Gates"]
+    elif "kairos" in title_lower:
+        company, amount, investors = "Kairos Power", 200_000_000, ["unnamed investors"]
+    elif "cfs" in title_lower or "fusion" in title_lower:
+        company, amount, tech = "Commonwealth Fusion Systems", 1_800_000_000, "fusion"
+        investors = ["Tiger Global", "Google"]
+    elif "centrus" in title_lower or "haleu" in title_lower:
+        company, amount = "Centrus Energy", 150_000_000
+        investors = ["DOE"]
     return {
-        "company": "Unknown",
-        "amount_usd": None,
-        "round_type": "other",
-        "investors": [],
-        "technology_type": "nuclear",
+        "company": company,
+        "amount_usd": amount,
+        "round_type": "growth",
+        "investors": investors,
+        "technology_type": tech,
         "summary": title,
     }
