@@ -110,7 +110,11 @@ function Legend() {
           <span className="text-gray-400">Advanced reactor</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-blue-500/30 border border-blue-500 shrink-0" />
+          <span className="w-3 h-3 rounded bg-blue-400/30 border border-blue-400 shrink-0 text-[7px] text-center leading-[10px]">✦</span>
+          <span className="text-gray-400">Fusion</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-blue-500/30 border border-blue-500 shrink-0 text-[7px] text-center leading-[10px]">$</span>
           <span className="text-gray-400">Investment</span>
         </div>
       </div>
@@ -191,7 +195,7 @@ export default function MapView() {
     [enrichmentEntities]
   )
 
-  // Investment markers (use enrichment entity coords where possible)
+  // Investment markers (use direct coords first, fall back to enrichment entity match)
   const investmentMarkers = useMemo(() => {
     const entityCoords = {}
     enrichmentEntities.forEach((e) => {
@@ -199,6 +203,9 @@ export default function MapView() {
     })
     return investments
       .map((inv) => {
+        // Use direct coords from the investment if available
+        if (inv.lat && inv.lng) return inv
+        // Fall back to enrichment entity coords
         const key = inv.company?.toLowerCase() || ''
         const coords = entityCoords[key]
         if (!coords) return null
@@ -293,11 +300,18 @@ export default function MapView() {
                     DOE Funding: {formatUSD(entity.doe_funding_usd)}
                   </div>
                 )}
-                {entity.website && (
-                  <a href={entity.website} target="_blank" rel="noopener noreferrer" className="text-[9px] text-gray-600 hover:text-blue-400 mt-1 block">
-                    Source: {entity.website.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]} ↗
-                  </a>
-                )}
+                <div className="mt-1 flex flex-col gap-0.5">
+                  {entity.website && (
+                    <a href={entity.website} target="_blank" rel="noopener noreferrer" className="text-[9px] text-gray-600 hover:text-blue-400">
+                      {entity.website.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]} ↗
+                    </a>
+                  )}
+                  {entity.source_url && (
+                    <a href={entity.source_url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-blue-500/60 hover:text-blue-400">
+                      Source ↗
+                    </a>
+                  )}
+                </div>
               </div>
             </Popup>
           </Marker>
@@ -344,7 +358,7 @@ export default function MapView() {
         <div className="flex items-center gap-3 text-[11px] font-mono">
           <span className="text-blue-400">{reactorSites.length} <span className="text-gray-600">sites</span></span>
           <span className="text-red-400">{enrichmentMarkers.length} <span className="text-gray-600">facilities</span></span>
-          <span className="text-gray-400">{reactors.length} <span className="text-gray-600">units</span></span>
+          <span className="text-gray-400">{investmentMarkers.length} <span className="text-gray-600">investments</span></span>
         </div>
       </div>
     </div>
