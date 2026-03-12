@@ -30,19 +30,57 @@ from database import (
     init_db,
 )
 from routers import enrichment, grid, investments, policy, reactors
-from scrapers.eia import fetch_fuel_mix
+from scrapers.eia import fetch_fuel_mix, _mock_fuel_mix
 from scrapers.news import (
     INVESTMENT_QUERIES,
     POLICY_QUERIES,
     extract_with_claude,
     fetch_news,
 )
-from scrapers.nrc import fetch_reactor_status
+from scrapers.nrc import fetch_reactor_status, _mock_reactor_status
 from seed_data import seed
 
-# Initialize database tables
+# Initialize database tables + seed data
 init_db()
 seed()
+
+
+def _seed_live_data():
+    """Populate grid snapshots and reactor power on cold start (no cron on free tier)."""
+    db = SessionLocal()
+    try:
+        existing = db.query(func.count(GridSnapshot.id)).scalar()
+        if existing > 0:
+            return
+
+        now = datetime.utcnow()
+        fuel_data = _mock_fuel_mix()
+        for row in fuel_data:
+            db.add(GridSnapshot(
+                timestamp=now,
+                region=row["region"],
+                fuel_type=row["fuel_type"],
+                value_mw=row["value_mw"],
+                respondent=row.get("respondent", ""),
+            ))
+
+        nrc_data = _mock_reactor_status()
+        for item in nrc_data:
+            reactor = db.query(Reactor).filter(Reactor.name == item["name"]).first()
+            if reactor:
+                reactor.current_pct_power = item["pct_power"]
+                reactor.last_updated = now
+
+        db.commit()
+        print(f"[Seed] Live data: {len(fuel_data)} grid rows, {len(nrc_data)} reactor updates")
+    except Exception as e:
+        db.rollback()
+        print(f"[Seed] Live data error: {e}")
+    finally:
+        db.close()
+
+
+_seed_live_data()
 
 app = FastAPI(
     title="GridPulse",
