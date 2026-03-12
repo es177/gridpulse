@@ -28,9 +28,13 @@ def _get_engine():
         if pg_url.startswith("postgres://"):
             pg_url = pg_url.replace("postgres://", "postgresql://", 1)
         return create_engine(pg_url, poolclass=NullPool, connect_args={"connect_timeout": 10})
-    # Local SQLite fallback
+    # Local SQLite fallback — use /tmp on Vercel (read-only filesystem)
+    if os.getenv("VERCEL"):
+        db_path = "/tmp/gridpulse.db"
+    else:
+        db_path = os.path.join(os.path.dirname(__file__), "gridpulse.db")
     return create_engine(
-        "sqlite:///./gridpulse.db",
+        f"sqlite:///{db_path}",
         connect_args={"check_same_thread": False},
     )
 
