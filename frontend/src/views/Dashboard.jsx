@@ -22,6 +22,7 @@ const DATA_SOURCES = [
 
 export default function Dashboard() {
   const summary = useStore((s) => s.summary)
+  const setActiveView = useStore((s) => s.setActiveView)
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -35,9 +36,11 @@ export default function Dashboard() {
             unit={summary?.total_reactors ? `/ ${summary.total_reactors}` : ''} color="text-blue-300" sublabel="NRC daily report" />
           <KPICard icon="$" label="Total Investment" value={summary?.total_investment_usd ? formatUSD(summary.total_investment_usd) : null}
             color="text-blue-400" sublabel="Curated + NewsAPI" />
-          <KPICard icon="◆" label="Latest Policy"
-            value={summary?.latest_policy?.title?.slice(0, 28) + (summary?.latest_policy?.title?.length > 28 ? '...' : '') || null}
-            color="text-gray-200" sublabel={summary?.latest_policy?.event_type?.replace('_', ' ') || '—'} />
+          <button onClick={() => setActiveView('policy')} className="text-left cursor-pointer group/kpi">
+            <KPICard icon="◆" label="Latest Policy"
+              value={summary?.latest_policy?.title ? summary.latest_policy.title.slice(0, 28) + (summary.latest_policy.title.length > 28 ? '...' : '') : null}
+              color="text-gray-200" sublabel="View all policies →" />
+          </button>
           <KPICard icon="◷" label="Last Updated"
             value={summary?.timestamp ? new Date(summary.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : null}
             color="text-gray-400" sublabel="UTC server time" />

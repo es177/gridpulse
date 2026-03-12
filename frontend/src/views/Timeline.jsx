@@ -33,7 +33,7 @@ function groupByMonth(items) {
     if (!groups[key]) groups[key] = { key, label, items: [] }
     groups[key].items.push(item)
   })
-  return Object.values(groups).sort((a, b) => a.key.localeCompare(b.key))
+  return Object.values(groups).sort((a, b) => b.key.localeCompare(a.key))
 }
 
 function TimelineCard({ item, isExpanded, onToggle }) {
@@ -159,7 +159,7 @@ export default function Timeline() {
       ...policyEvents.map((e) => ({ ...e, _type: 'policy', _id: `p-${e.id}` })),
       ...investments.map((e) => ({ ...e, _type: 'investment', _id: `i-${e.id}`, title: e.summary })),
     ]
-    return dedupeByTitle(items).sort((a, b) => new Date(a.date) - new Date(b.date))
+    return dedupeByTitle(items).sort((a, b) => new Date(b.date) - new Date(a.date))
   }, [policyEvents, investments])
 
   const filtered = useMemo(() => {

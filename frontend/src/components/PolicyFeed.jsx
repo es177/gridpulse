@@ -12,6 +12,7 @@ const TYPE_BADGE = {
 
 const TECH_BADGE = {
   nuclear: 'bg-blue-500/10 text-blue-400',
+  enrichment: 'bg-red-500/10 text-red-400',
   fusion: 'bg-blue-500/10 text-blue-300',
   solar: 'bg-white/[0.06] text-gray-300',
   wind: 'bg-white/[0.06] text-gray-300',
@@ -65,11 +66,10 @@ export default function PolicyFeed() {
           <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
           Activity Feed
         </div>
-        <a href="https://newsapi.org/" target="_blank" rel="noopener noreferrer"
-          className="text-[9px] font-mono text-gray-600 hover:text-blue-400 transition-colors">SOURCE: NEWSAPI + AI ↗</a>
+        <span className="text-[9px] font-mono text-gray-600">{items.length} items</span>
       </div>
       <div className="flex-1 overflow-auto min-h-0">
-        {items.slice(0, 40).map((item, i) => {
+        {items.map((item, i) => {
           const isPolicy = item._type === 'policy'
           const amount = item.dollar_amount || item.amount_usd
           return (

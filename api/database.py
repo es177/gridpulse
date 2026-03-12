@@ -106,6 +106,7 @@ class EnrichmentEntity(Base):
     doe_funding_usd = Column(Float, default=0)
     nrc_docket = Column(String(32))
     website = Column(String(256))
+    source_url = Column(String(512), nullable=True)
 
 
 class PolicyEvent(Base):
@@ -137,6 +138,9 @@ class Investment(Base):
     investors_json = Column(Text, default="[]")
     technology_type = Column(String(32))
     summary = Column(Text)
+    source_url = Column(String(512), nullable=True)
+    lat = Column(Float, nullable=True)
+    lng = Column(Float, nullable=True)
 
     @property
     def investors(self):

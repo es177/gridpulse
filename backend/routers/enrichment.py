@@ -38,6 +38,7 @@ async def list_entities(
                 "doe_funding_usd": e.doe_funding_usd,
                 "nrc_docket": e.nrc_docket,
                 "website": e.website,
+                "source_url": e.source_url,
             }
             for e in entities
         ],

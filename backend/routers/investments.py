@@ -46,6 +46,9 @@ async def list_investments(
                 "investors": json.loads(inv.investors_json) if inv.investors_json else [],
                 "technology_type": inv.technology_type,
                 "summary": inv.summary,
+                "source_url": inv.source_url,
+                "lat": inv.lat,
+                "lng": inv.lng,
             }
             for inv in investments
         ],
