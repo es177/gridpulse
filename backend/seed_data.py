@@ -132,7 +132,7 @@ ENRICHMENT_ENTITIES = [
         "stage": "licensed",
         "lat": 45.5152,
         "lng": -122.6784,
-        "description": "First SMR to receive NRC design certification (Jan 2023). 77 MWe VOYGR module. CFPP project in Idaho cancelled (Nov 2023), pivoting to other domestic and international deployments.",
+        "description": "First SMR to receive NRC design certification (Jan 2023). 50 MWe VOYGR module (77 MWe uprate approved separately in 2025). CFPP project in Idaho cancelled (Nov 2023), pivoting to other domestic and international deployments.",
         "doe_funding_usd": 600_000_000,
         "nrc_docket": "99902052",
         "website": "https://nuscalepower.com",
@@ -359,10 +359,10 @@ KNOWN_INVESTMENTS = [
     },
     {
         "company": "Last Energy",
-        "date": "2025-12-01",
+        "date": "2025-12-16",
         "amount_usd": 100_000_000,
         "round_type": "series_c",
-        "investors": ["Gigafund", "unnamed investors"],
+        "investors": ["Astera Institute", "Gigafund", "AE Ventures"],
         "technology_type": "nuclear",
         "summary": "Last Energy closed oversubscribed $100M+ Series C to complete its PWR-5 pilot reactor at Texas A&M under DOE's Reactor Pilot Program, targeting criticality in 2026.",
         "source_url": "https://www.powermag.com/advanced-nuclear-developers-raise-new-capital-as-2025-investment-hits-record-levels-and-demonstrations-near/",
@@ -554,10 +554,10 @@ SEED_POLICY_EVENTS = [
         "date": "2026-01-05",
         "source_url": "https://www.energy.gov/articles/us-department-energy-awards-27-billion-restore-american-uranium-enrichment",
         "event_type": "funding_announcement",
-        "entities": ["DOE", "Centrus Energy", "Urenco USA", "General Matter", "Orano"],
+        "entities": ["DOE", "Centrus Energy", "General Matter", "Orano Federal Services"],
         "dollar_amount": 2_700_000_000,
         "sentiment": "positive",
-        "summary": "DOE awards contracts totaling $2.7B to restore American uranium enrichment, with $900M contracts to build domestic HALEU and LEU capacity.",
+        "summary": "DOE awards contracts totaling $2.7B to Centrus ($900M), General Matter ($900M), and Orano ($900M) plus $28M to Global Laser Enrichment to restore domestic HALEU and LEU enrichment capacity.",
     },
     # --- 2025 ---
     {
@@ -572,13 +572,13 @@ SEED_POLICY_EVENTS = [
     },
     {
         "title": "Kairos Power Begins Nuclear Construction on Hermes Reactor",
-        "date": "2025-05-15",
-        "source_url": "https://kairospower.com/",
+        "date": "2025-05-07",
+        "source_url": "https://kairospower.com/external_updates/kairos-power-begins-nuclear-construction-of-hermes-demonstration-reactor/",
         "event_type": "regulatory",
         "entities": ["Kairos Power", "NRC", "DOE"],
         "dollar_amount": None,
         "sentiment": "positive",
-        "summary": "Kairos Power begins nuclear construction at its Hermes low-power demonstration reactor in Oak Ridge, TN — the first advanced reactor to reach this milestone.",
+        "summary": "Kairos Power pours first safety-related concrete at its Hermes demonstration reactor in Oak Ridge, TN — the first advanced reactor to begin nuclear construction.",
     },
     {
         "title": "Executive Orders to Quadruple US Nuclear Energy Production by 2050",
@@ -761,10 +761,10 @@ def seed():
 
         # Seed investments
         existing_inv = {
-            (i.company, str(i.amount_usd)) for i in db.query(Investment).all()
+            (i.company, i.amount_usd) for i in db.query(Investment).all()
         }
         for inv in KNOWN_INVESTMENTS:
-            key = (inv["company"], str(inv["amount_usd"]))
+            key = (inv["company"], float(inv["amount_usd"]) if inv["amount_usd"] else None)
             if key not in existing_inv:
                 db.add(
                     Investment(

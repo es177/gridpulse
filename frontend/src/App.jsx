@@ -5,13 +5,11 @@ import Dashboard from './views/Dashboard'
 import Timeline from './views/Timeline'
 import MapView from './views/MapView'
 import GlobalCompare from './views/GlobalCompare'
-import PolicyView from './views/PolicyView'
 import EventModal from './components/EventModal'
 
 const VIEWS = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'timeline', label: 'Timeline' },
-  { id: 'policy', label: 'Policy' },
   { id: 'map', label: 'Map' },
   { id: 'global', label: 'Global' },
 ]
@@ -105,7 +103,6 @@ export default function App() {
       <main className="flex-1 overflow-hidden">
         {activeView === 'dashboard' && <Dashboard />}
         {activeView === 'timeline' && <Timeline />}
-        {activeView === 'policy' && <PolicyView />}
         {activeView === 'map' && <MapView />}
         {activeView === 'global' && <GlobalCompare />}
       </main>
