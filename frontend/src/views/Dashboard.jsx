@@ -116,11 +116,11 @@ const KPI_DETAILS = {
   gridDemand: {
     source: 'EIA Hourly Electric Grid Monitor (Form EIA-930)',
     sourceUrl: 'https://www.eia.gov/electricity/gridmonitor/',
-    methodology: 'Sum of fuel-type net generation across major US balancing authorities via the EIA API (PJM, MISO, ERCOT, SPP, CAISO, NYISO, ISONE). Measured in megawatts, converted to GW.',
-    refresh: 'Every 5 min',
+    methodology: 'Hourly demand for the contiguous US (US48), reported directly by balancing authorities to EIA via Form EIA-930. Aggregated across all Lower 48 balancing authorities. Updated hourly with a ~1-hour lag. Measured in megawatts, displayed in GW.',
+    refresh: 'Hourly (~1-hour lag)',
     accuracy: 'Official EIA data',
-    coverage: '7 major ISOs/RTOs',
-    note: 'Covers ~85% of US generation. Demand fluctuates with time of day — peaks ~4-7 PM ET. When no EIA API key is configured, mock data calibrated to 2024-2025 EIA historical averages is used.',
+    coverage: 'All Lower 48 balancing authorities (US48 aggregate)',
+    note: 'Demand fluctuates with time of day — peaks ~4-7 PM ET. When no EIA API key is configured, mock data calibrated to 2024-2025 EIA historical averages is used.',
   },
   nuclearShare: {
     source: 'EIA Hourly Electric Grid Monitor (Form EIA-930)',
