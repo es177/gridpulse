@@ -1,0 +1,33 @@
+[
+ {
+  "data": {
+   "actual": [
+    {
+     "SystemLoadBtmPv": 10907.472,
+     "NativeLoadBtmPv": 10328.772,
+     "PumpMw": 578.7,
+     "LoadMw": 10907.472,
+     "Mw": 10328.772,
+     "BeginDate": "2026-10-12T00:00:00.000-04:00"
+    },
+    {
+     "SystemLoadBtmPv": 12503.316,
+     "NativeLoadBtmPv": 12499.016,
+     "PumpMw": 4.3,
+     "LoadMw": 12503.316,
+     "Mw": 12499.016,
+     "BeginDate": "2026-10-12T21:45:00.000-04:00"
+    },
+    {
+     "SystemLoadBtmPv": 12412.058,
+     "NativeLoadBtmPv": 12410.558,
+     "PumpMw": 1.5,
+     "LoadMw": 12412.058,
+     "Mw": 12410.558,
+     "BeginDate": "2026-10-12T21:50:00.000-04:00"
+    }
+   ]
+  },
+  "namespace": "_nstmp_"
+ }
+]

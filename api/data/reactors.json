@@ -1,0 +1,770 @@
+{
+ "note": "Reference coordinates and licensed thermal power (MWt) for operating units; joined to live NRC data by docket.",
+ "sources": {
+  "mwt": "NRC unit pages (Licensed MWt), retrieved 2026-10-12",
+  "coordinates": "Legacy reference table; EIA-860M plant coordinates where missing",
+  "mwe": "EIA-860M nameplate capacity, period 2026-07"
+ },
+ "units": [
+  {
+   "name": "Arkansas Nuclear 1",
+   "docket": "05000313",
+   "lat": 35.311,
+   "lng": -93.2351,
+   "mwt": 2568.0,
+   "mwe": 902.5
+  },
+  {
+   "name": "Arkansas Nuclear 2",
+   "docket": "05000368",
+   "lat": 35.311,
+   "lng": -93.2351,
+   "mwt": 3026.0,
+   "mwe": 942.5
+  },
+  {
+   "name": "Beaver Valley 1",
+   "docket": "05000334",
+   "lat": 40.6217,
+   "lng": -80.4339,
+   "mwt": 2900.0,
+   "mwe": 923.4
+  },
+  {
+   "name": "Beaver Valley 2",
+   "docket": "05000412",
+   "lat": 40.6217,
+   "lng": -80.4339,
+   "mwt": 2900.0,
+   "mwe": 923.4
+  },
+  {
+   "name": "Braidwood 1",
+   "docket": "05000456",
+   "lat": 41.2406,
+   "lng": -88.2281,
+   "mwt": 3645.0,
+   "mwe": 1224.9
+  },
+  {
+   "name": "Braidwood 2",
+   "docket": "05000457",
+   "lat": 41.2406,
+   "lng": -88.2281,
+   "mwt": 3645.0,
+   "mwe": 1224.9
+  },
+  {
+   "name": "Browns Ferry 1",
+   "docket": "05000259",
+   "lat": 34.7042,
+   "lng": -87.1189,
+   "mwt": 3952.0,
+   "mwe": 1281.0
+  },
+  {
+   "name": "Browns Ferry 2",
+   "docket": "05000260",
+   "lat": 34.7042,
+   "lng": -87.1189,
+   "mwt": 3952.0,
+   "mwe": 1281.0
+  },
+  {
+   "name": "Browns Ferry 3",
+   "docket": "05000296",
+   "lat": 34.7042,
+   "lng": -87.1189,
+   "mwt": 3952.0,
+   "mwe": 1292.0
+  },
+  {
+   "name": "Brunswick 1",
+   "docket": "05000325",
+   "lat": 33.9597,
+   "lng": -78.0114,
+   "mwt": 2923.0,
+   "mwe": 1001.6
+  },
+  {
+   "name": "Brunswick 2",
+   "docket": "05000324",
+   "lat": 33.9597,
+   "lng": -78.0114,
+   "mwt": 2923.0,
+   "mwe": 1001.6
+  },
+  {
+   "name": "Byron 1",
+   "docket": "05000454",
+   "lat": 42.0758,
+   "lng": -89.2817,
+   "mwt": 3645.0,
+   "mwe": 1224.9
+  },
+  {
+   "name": "Byron 2",
+   "docket": "05000455",
+   "lat": 42.0758,
+   "lng": -89.2817,
+   "mwt": 3645.0,
+   "mwe": 1224.9
+  },
+  {
+   "name": "Callaway",
+   "docket": "05000483",
+   "lat": 38.758919,
+   "lng": -91.778841,
+   "mwt": 3565.0,
+   "mwe": 1235.8
+  },
+  {
+   "name": "Calvert Cliffs 1",
+   "docket": "05000317",
+   "lat": 38.4347,
+   "lng": -76.4419,
+   "mwt": 2737.0,
+   "mwe": 918.0
+  },
+  {
+   "name": "Calvert Cliffs 2",
+   "docket": "05000318",
+   "lat": 38.4347,
+   "lng": -76.4419,
+   "mwt": 2737.0,
+   "mwe": 932.4
+  },
+  {
+   "name": "Catawba 1",
+   "docket": "05000413",
+   "lat": 35.0514,
+   "lng": -81.07,
+   "mwt": 3469.0,
+   "mwe": 1205.1
+  },
+  {
+   "name": "Catawba 2",
+   "docket": "05000414",
+   "lat": 35.0514,
+   "lng": -81.07,
+   "mwt": 3411.0,
+   "mwe": 1205.1
+  },
+  {
+   "name": "Clinton",
+   "docket": "05000461",
+   "lat": 40.1722,
+   "lng": -88.8339,
+   "mwt": 3473.0,
+   "mwe": 1138.3
+  },
+  {
+   "name": "Columbia Generating Station",
+   "docket": "05000397",
+   "lat": 46.4711,
+   "lng": -119.3337,
+   "mwt": 3544.0,
+   "mwe": 1200.0
+  },
+  {
+   "name": "Comanche Peak 1",
+   "docket": "05000445",
+   "lat": 32.2986,
+   "lng": -97.7853,
+   "mwt": 3612.0,
+   "mwe": 1215.0
+  },
+  {
+   "name": "Comanche Peak 2",
+   "docket": "05000446",
+   "lat": 32.2986,
+   "lng": -97.7853,
+   "mwt": 3612.0,
+   "mwe": 1215.0
+  },
+  {
+   "name": "Cooper",
+   "docket": "05000298",
+   "lat": 40.3619,
+   "lng": -95.6414,
+   "mwt": 2419.0,
+   "mwe": 801.0
+  },
+  {
+   "name": "D.C. Cook 1",
+   "docket": "05000315",
+   "lat": 41.9756,
+   "lng": -86.5658,
+   "mwt": 3304.0,
+   "mwe": 1152.0
+  },
+  {
+   "name": "D.C. Cook 2",
+   "docket": "05000316",
+   "lat": 41.9756,
+   "lng": -86.5658,
+   "mwt": 3468.0,
+   "mwe": 1133.3
+  },
+  {
+   "name": "Davis-Besse",
+   "docket": "05000346",
+   "lat": 41.5972,
+   "lng": -83.0864,
+   "mwt": 2817.0,
+   "mwe": 925.2
+  },
+  {
+   "name": "Diablo Canyon 1",
+   "docket": "05000275",
+   "lat": 35.2117,
+   "lng": -120.8561,
+   "mwt": 3411.0,
+   "mwe": 1159.0
+  },
+  {
+   "name": "Diablo Canyon 2",
+   "docket": "05000323",
+   "lat": 35.2117,
+   "lng": -120.8561,
+   "mwt": 3411.0,
+   "mwe": 1164.0
+  },
+  {
+   "name": "Dresden 2",
+   "docket": "05000237",
+   "lat": 41.3897,
+   "lng": -88.2714,
+   "mwt": 2957.0,
+   "mwe": 1009.3
+  },
+  {
+   "name": "Dresden 3",
+   "docket": "05000249",
+   "lat": 41.3897,
+   "lng": -88.2714,
+   "mwt": 2957.0,
+   "mwe": 1009.3
+  },
+  {
+   "name": "Farley 1",
+   "docket": "05000348",
+   "lat": 31.2228,
+   "lng": -85.1086,
+   "mwt": 2821.0,
+   "mwe": 888.2
+  },
+  {
+   "name": "Farley 2",
+   "docket": "05000364",
+   "lat": 31.2228,
+   "lng": -85.1086,
+   "mwt": 2821.0,
+   "mwe": 888.2
+  },
+  {
+   "name": "Fermi 2",
+   "docket": "05000341",
+   "lat": 41.9606,
+   "lng": -83.2578,
+   "mwt": 3486.0,
+   "mwe": 1217.0
+  },
+  {
+   "name": "FitzPatrick",
+   "docket": "05000333",
+   "lat": 43.5236,
+   "lng": -76.3981,
+   "mwt": 2536.0,
+   "mwe": 883.3
+  },
+  {
+   "name": "Ginna",
+   "docket": "05000244",
+   "lat": 43.2778,
+   "lng": -77.3103,
+   "mwt": 1775.0,
+   "mwe": 614.0
+  },
+  {
+   "name": "Grand Gulf 1",
+   "docket": "05000416",
+   "lat": 32.0069,
+   "lng": -91.0486,
+   "mwt": 4408.0,
+   "mwe": 1440.0
+  },
+  {
+   "name": "Hatch 1",
+   "docket": "05000321",
+   "lat": 31.9342,
+   "lng": -82.3444,
+   "mwt": 2804.0,
+   "mwe": 924.0
+  },
+  {
+   "name": "Hatch 2",
+   "docket": "05000366",
+   "lat": 31.9342,
+   "lng": -82.3444,
+   "mwt": 2804.0,
+   "mwe": 924.0
+  },
+  {
+   "name": "Hope Creek 1",
+   "docket": "05000354",
+   "lat": 39.4681,
+   "lng": -75.5347,
+   "mwt": 3902.0,
+   "mwe": 1290.7
+  },
+  {
+   "name": "La Salle 1",
+   "docket": "05000373",
+   "lat": 41.2439,
+   "lng": -88.6708,
+   "mwt": 3546.0,
+   "mwe": 1170.0
+  },
+  {
+   "name": "La Salle 2",
+   "docket": "05000374",
+   "lat": 41.2439,
+   "lng": -88.6708,
+   "mwt": 3546.0,
+   "mwe": 1170.0
+  },
+  {
+   "name": "Limerick 1",
+   "docket": "05000352",
+   "lat": 40.2242,
+   "lng": -75.5889,
+   "mwt": 3515.0,
+   "mwe": 1138.5
+  },
+  {
+   "name": "Limerick 2",
+   "docket": "05000353",
+   "lat": 40.2242,
+   "lng": -75.5889,
+   "mwt": 3515.0,
+   "mwe": 1138.5
+  },
+  {
+   "name": "McGuire 1",
+   "docket": "05000369",
+   "lat": 35.4322,
+   "lng": -80.9494,
+   "mwt": 3469.0,
+   "mwe": 1220.3
+  },
+  {
+   "name": "McGuire 2",
+   "docket": "05000370",
+   "lat": 35.4322,
+   "lng": -80.9494,
+   "mwt": 3469.0,
+   "mwe": 1220.3
+  },
+  {
+   "name": "Millstone 2",
+   "docket": "05000336",
+   "lat": 41.3086,
+   "lng": -72.1681,
+   "mwt": 2700.0,
+   "mwe": 909.9
+  },
+  {
+   "name": "Millstone 3",
+   "docket": "05000423",
+   "lat": 41.3086,
+   "lng": -72.1681,
+   "mwt": 3709.0,
+   "mwe": 1350.0
+  },
+  {
+   "name": "Monticello",
+   "docket": "05000263",
+   "lat": 45.3333,
+   "lng": -93.8483,
+   "mwt": 2004.0,
+   "mwe": 685.0
+  },
+  {
+   "name": "Nine Mile Point 1",
+   "docket": "05000220",
+   "lat": 43.5222,
+   "lng": -76.41,
+   "mwt": 1850.0,
+   "mwe": 641.8
+  },
+  {
+   "name": "Nine Mile Point 2",
+   "docket": "05000410",
+   "lat": 43.5222,
+   "lng": -76.41,
+   "mwt": 3988.0,
+   "mwe": 1259.3
+  },
+  {
+   "name": "North Anna 1",
+   "docket": "05000338",
+   "lat": 38.0606,
+   "lng": -77.7897,
+   "mwt": 2940.0,
+   "mwe": 979.7
+  },
+  {
+   "name": "North Anna 2",
+   "docket": "05000339",
+   "lat": 38.0606,
+   "lng": -77.7897,
+   "mwt": 2940.0,
+   "mwe": 979.7
+  },
+  {
+   "name": "Oconee 1",
+   "docket": "05000269",
+   "lat": 34.7939,
+   "lng": -82.8986,
+   "mwt": 2568.0,
+   "mwe": 886.7
+  },
+  {
+   "name": "Oconee 2",
+   "docket": "05000270",
+   "lat": 34.7939,
+   "lng": -82.8986,
+   "mwt": 2568.0,
+   "mwe": 886.7
+  },
+  {
+   "name": "Oconee 3",
+   "docket": "05000287",
+   "lat": 34.7939,
+   "lng": -82.8986,
+   "mwt": 2568.0,
+   "mwe": 893.3
+  },
+  {
+   "name": "Palisades",
+   "docket": "05000255",
+   "lat": 42.323,
+   "lng": -86.3146,
+   "mwt": 2565.4,
+   "mwe": 811.8
+  },
+  {
+   "name": "Palo Verde 1",
+   "docket": "05000528",
+   "lat": 33.3881,
+   "lng": -112.8619,
+   "mwt": 3990.0,
+   "mwe": 1403.2
+  },
+  {
+   "name": "Palo Verde 2",
+   "docket": "05000529",
+   "lat": 33.3881,
+   "lng": -112.8619,
+   "mwt": 3990.0,
+   "mwe": 1403.2
+  },
+  {
+   "name": "Palo Verde 3",
+   "docket": "05000530",
+   "lat": 33.3881,
+   "lng": -112.8619,
+   "mwt": 3990.0,
+   "mwe": 1403.2
+  },
+  {
+   "name": "Peach Bottom 2",
+   "docket": "05000277",
+   "lat": 39.7589,
+   "lng": -76.2689,
+   "mwt": 4016.0,
+   "mwe": 1499.4
+  },
+  {
+   "name": "Peach Bottom 3",
+   "docket": "05000278",
+   "lat": 39.7589,
+   "lng": -76.2689,
+   "mwt": 4016.0,
+   "mwe": 1377.0
+  },
+  {
+   "name": "Perry 1",
+   "docket": "05000440",
+   "lat": 41.8011,
+   "lng": -81.1442,
+   "mwt": 3758.0,
+   "mwe": 1311.6
+  },
+  {
+   "name": "Point Beach 1",
+   "docket": "05000266",
+   "lat": 44.2811,
+   "lng": -87.5367,
+   "mwt": 1800.0,
+   "mwe": 643.0
+  },
+  {
+   "name": "Point Beach 2",
+   "docket": "05000301",
+   "lat": 44.2811,
+   "lng": -87.5367,
+   "mwt": 1800.0,
+   "mwe": 643.0
+  },
+  {
+   "name": "Prairie Island 1",
+   "docket": "05000282",
+   "lat": 44.6219,
+   "lng": -92.6331,
+   "mwt": 1677.0,
+   "mwe": 593.1
+  },
+  {
+   "name": "Prairie Island 2",
+   "docket": "05000306",
+   "lat": 44.6219,
+   "lng": -92.6331,
+   "mwt": 1677.0,
+   "mwe": 593.1
+  },
+  {
+   "name": "Quad Cities 1",
+   "docket": "05000254",
+   "lat": 41.7264,
+   "lng": -90.31,
+   "mwt": 2957.0,
+   "mwe": 1009.3
+  },
+  {
+   "name": "Quad Cities 2",
+   "docket": "05000265",
+   "lat": 41.7264,
+   "lng": -90.31,
+   "mwt": 2957.0,
+   "mwe": 1009.3
+  },
+  {
+   "name": "River Bend 1",
+   "docket": "05000458",
+   "lat": 30.7572,
+   "lng": -91.3317,
+   "mwt": 3091.0,
+   "mwe": 1035.9
+  },
+  {
+   "name": "Robinson 2",
+   "docket": "05000261",
+   "lat": 34.4017,
+   "lng": -80.1583,
+   "mwt": 2339.0,
+   "mwe": 768.6
+  },
+  {
+   "name": "Saint Lucie 1",
+   "docket": "05000335",
+   "lat": 27.3486,
+   "lng": -80.2464,
+   "mwt": 3020.0,
+   "mwe": 1080.0
+  },
+  {
+   "name": "Saint Lucie 2",
+   "docket": "05000389",
+   "lat": 27.3486,
+   "lng": -80.2464,
+   "mwt": 3020.0,
+   "mwe": 1080.0
+  },
+  {
+   "name": "Salem 1",
+   "docket": "05000272",
+   "lat": 39.4628,
+   "lng": -75.5361,
+   "mwt": 3459.0,
+   "mwe": 1170.0
+  },
+  {
+   "name": "Salem 2",
+   "docket": "05000311",
+   "lat": 39.4628,
+   "lng": -75.5361,
+   "mwt": 3459.0,
+   "mwe": 1170.0
+  },
+  {
+   "name": "Seabrook 1",
+   "docket": "05000443",
+   "lat": 42.8986,
+   "lng": -70.8489,
+   "mwt": 3648.0,
+   "mwe": 1242.0
+  },
+  {
+   "name": "Sequoyah 1",
+   "docket": "05000327",
+   "lat": 35.2264,
+   "lng": -85.0886,
+   "mwt": 3455.0,
+   "mwe": 1220.5
+  },
+  {
+   "name": "Sequoyah 2",
+   "docket": "05000328",
+   "lat": 35.2264,
+   "lng": -85.0886,
+   "mwt": 3455.0,
+   "mwe": 1220.5
+  },
+  {
+   "name": "Shearon Harris 1",
+   "docket": "05000400",
+   "lat": 35.6333,
+   "lng": -78.9556,
+   "mwt": 2948.0,
+   "mwe": 950.9
+  },
+  {
+   "name": "South Texas 1",
+   "docket": "05000498",
+   "lat": 28.795,
+   "lng": -96.0489,
+   "mwt": 3853.0,
+   "mwe": 1354.3
+  },
+  {
+   "name": "South Texas 2",
+   "docket": "05000499",
+   "lat": 28.795,
+   "lng": -96.0489,
+   "mwt": 3853.0,
+   "mwe": 1354.3
+  },
+  {
+   "name": "Summer",
+   "docket": "05000395",
+   "lat": 34.2961,
+   "lng": -81.3203,
+   "mwt": 2900.0,
+   "mwe": 1029.6
+  },
+  {
+   "name": "Surry 1",
+   "docket": "05000280",
+   "lat": 37.1656,
+   "lng": -76.6983,
+   "mwt": 2587.0,
+   "mwe": 847.5
+  },
+  {
+   "name": "Surry 2",
+   "docket": "05000281",
+   "lat": 37.1656,
+   "lng": -76.6983,
+   "mwt": 2587.0,
+   "mwe": 847.5
+  },
+  {
+   "name": "Susquehanna 1",
+   "docket": "05000387",
+   "lat": 41.0922,
+   "lng": -76.1467,
+   "mwt": 3952.0,
+   "mwe": 1266.0
+  },
+  {
+   "name": "Susquehanna 2",
+   "docket": "05000388",
+   "lat": 41.0922,
+   "lng": -76.1467,
+   "mwt": 3952.0,
+   "mwe": 1266.0
+  },
+  {
+   "name": "Turkey Point 3",
+   "docket": "05000250",
+   "lat": 25.4353,
+   "lng": -80.3308,
+   "mwt": 2644.0,
+   "mwe": 877.2
+  },
+  {
+   "name": "Turkey Point 4",
+   "docket": "05000251",
+   "lat": 25.4353,
+   "lng": -80.3308,
+   "mwt": 2644.0,
+   "mwe": 877.2
+  },
+  {
+   "name": "Vogtle 1",
+   "docket": "05000424",
+   "lat": 33.1422,
+   "lng": -81.7647,
+   "mwt": 3625.6,
+   "mwe": 1215.0
+  },
+  {
+   "name": "Vogtle 2",
+   "docket": "05000425",
+   "lat": 33.1422,
+   "lng": -81.7647,
+   "mwt": 3625.6,
+   "mwe": 1215.0
+  },
+  {
+   "name": "Vogtle 3",
+   "docket": "05200025",
+   "lat": 33.1422,
+   "lng": -81.7647,
+   "mwt": 3400.0,
+   "mwe": 1114.0
+  },
+  {
+   "name": "Vogtle 4",
+   "docket": "05200026",
+   "lat": 33.1422,
+   "lng": -81.7647,
+   "mwt": 3400.0,
+   "mwe": 1114.0
+  },
+  {
+   "name": "Waterford 3",
+   "docket": "05000382",
+   "lat": 29.9953,
+   "lng": -90.4719,
+   "mwt": 3716.0,
+   "mwe": 1199.8
+  },
+  {
+   "name": "Watts Bar 1",
+   "docket": "05000390",
+   "lat": 35.605,
+   "lng": -84.7914,
+   "mwt": 3459.0,
+   "mwe": 1269.9
+  },
+  {
+   "name": "Watts Bar 2",
+   "docket": "05000391",
+   "lat": 35.605,
+   "lng": -84.7914,
+   "mwt": 3459.0,
+   "mwe": 1269.9
+  },
+  {
+   "name": "Wolf Creek 1",
+   "docket": "05000482",
+   "lat": 38.2386,
+   "lng": -95.6886,
+   "mwt": 3565.0,
+   "mwe": 1296.3
+  }
+ ]
+}

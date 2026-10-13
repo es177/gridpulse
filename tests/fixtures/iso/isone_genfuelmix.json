@@ -1,0 +1,65 @@
+[
+ {
+  "data": [
+   {
+    "NaturalGas": 5063.0,
+    "Wind": 1657.0,
+    "Nuclear": 2113.0,
+    "Wood": 154.0,
+    "Refuse": 319.0,
+    "LandfillGas": 23.0,
+    "BeginDateMs": 1791777723000,
+    "Batteries": 39.0,
+    "Renewables": 2153.0,
+    "NetImports": 1336.0,
+    "BeginDate": "2026-10-12T00:02:03.000-04:00",
+    "Hydro": 166.0
+   },
+   {
+    "Wind": 1090.0,
+    "Wood": 140.0,
+    "LandfillGas": 22.0,
+    "BeginDateMs": 1791855537000,
+    "Batteries": 3.0,
+    "BeginDate": "2026-10-12T21:38:57.000-04:00",
+    "NaturalGas": 7608.0,
+    "Nuclear": 2109.0,
+    "Refuse": 304.0,
+    "Renewables": 1556.0,
+    "NetImports": 1180.0,
+    "Hydro": 183.0,
+    "Other": 0.0
+   },
+   {
+    "Wind": 1097.0,
+    "Wood": 139.0,
+    "LandfillGas": 22.0,
+    "BeginDateMs": 1791855853000,
+    "Batteries": 0.0,
+    "BeginDate": "2026-10-12T21:44:13.000-04:00",
+    "NaturalGas": 7564.0,
+    "Nuclear": 2112.0,
+    "Refuse": 297.0,
+    "Renewables": 1555.0,
+    "NetImports": 1204.0,
+    "Hydro": 183.0,
+    "Other": 0.0
+   },
+   {
+    "NaturalGas": 7452.0,
+    "Wind": 1124.0,
+    "Nuclear": 2110.0,
+    "Wood": 138.0,
+    "Refuse": 301.0,
+    "LandfillGas": 22.0,
+    "BeginDateMs": 1791856143000,
+    "Renewables": 1585.0,
+    "NetImports": 1204.0,
+    "BeginDate": "2026-10-12T21:49:03.000-04:00",
+    "Hydro": 182.0,
+    "Other": 0.0
+   }
+  ],
+  "namespace": "_nstmp_"
+ }
+]

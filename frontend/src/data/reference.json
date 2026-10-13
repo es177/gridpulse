@@ -1,0 +1,30 @@
+{
+  "reviewed": "2026-09-16",
+  "note": "Published figures copied from the linked reports. They change only when a new report is released.",
+  "items": [
+    {
+      "label": "US data-center electricity use, 2024",
+      "value": "192 TWh",
+      "detail": "4.7% of US electricity. Modeled estimate, all data centers (not AI alone).",
+      "source": "Berkeley Lab, 2025 update",
+      "published": "2026-06",
+      "url": "https://bies.lbl.gov/publications/united-states-data-center-energy-2025"
+    },
+    {
+      "label": "US data-center electricity use, 2030 scenarios",
+      "value": "521–843 TWh",
+      "detail": "Reference 649 TWh (11.8%). Low 9.5%, high 15.3%. Scenario range, not a confidence interval.",
+      "source": "Berkeley Lab, 2025 update",
+      "published": "2026-06",
+      "url": "https://escholarship.org/content/qt33m6w3x0/qt33m6w3x0.pdf"
+    },
+    {
+      "label": "PJM capacity auction, 2028/29 delivery year",
+      "value": "$325/MW-day",
+      "detail": "149.2 GW UCAP procured including FRR; 6.8 GW short of the reliability requirement. A planning signal, not an outage forecast.",
+      "source": "PJM auction results",
+      "published": "2026-07-14",
+      "url": "https://www.pjm.com/-/media/DotCom/markets-ops/rpm/rpm-auction-info/2028-2029/2028-2029-bra-results-report.pdf"
+    }
+  ]
+}

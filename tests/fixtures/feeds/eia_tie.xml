@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<?xml-stylesheet href="rss.xsl" type="text/xsl" media="screen"?>
+<rss version="2.0">
+	<channel>
+		<title>Today in Energy</title>
+		<link>http://www.eia.gov/todayinenergy</link>
+		<description>Short, timely articles with graphics on energy facts, issues, and trends.</description>
+		<language>en-us</language>
+		<lastBuildDate>Fri, 09 Oct 2026 09:00:00 EST</lastBuildDate>
+
+		<image>
+		<title>EIA logo</title>
+		<url>http://www.eia.gov/global/images/logos/eia_logo_250.png</url>
+		<link>http://www.eia.gov/</link>
+		<description>U.S. Energy Information Administration</description>
+		</image>
+		
+		<item>
+		<title>Category 2 Hurricane Isaias nears landfall, leading to production shut-ins</title>
+		<link>https://www.eia.gov/todayinenergy/detail.php?id=68284</link>
+		<pubDate>Fri, 09 Oct  09:00:00 EST</pubDate>
+		<description>As of 4:00 a.m. central time on October 9, the National Oceanic and Atmospheric Administration expects Hurricane Isaias to make landfall on the Gulf Coast late Friday or early Saturday, creating the potential for significant disruptions to energy infrastructure. Hurricane Isaias is the first hurricane of the 2026 Atlantic season and will be the largest storm system to make landfall in the region since Hurricane Helene in September 2024.</description>
+		</item>
+<item>
+		<title>Mixed outlook for energy expenditures this winter</title>
+		<link>https://www.eia.gov/todayinenergy/detail.php?id=68264</link>
+		<pubDate>Wed, 07 Oct 2026  09:00:00 EST</pubDate>
+		<description>We expect energy expenditures this winter to vary because of diverging trends in energy prices among fuels and regional variation in forecast temperatures. We expect that lower prices for natural gas and propane will drive decreases in expenditures this year for the half of U.S. households heating with those fuels. Higher prices for electricity and heating oil drive increased expenditures for households heating with those fuels in our forecast.</description>
+		</item>
+		
+	</channel>
+</rss>

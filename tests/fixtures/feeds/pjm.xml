@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>PJM Inside Lines</title>
+	<atom:link href="https://insidelines.pjm.com/feed/" rel="self" type="application/rss+xml" />
+	<link>https://insidelines.pjm.com</link>
+	<description>Inside Lines informs PJM&#039;s stakeholders of various committee actions, upcoming training and other activities.</description>
+	<lastBuildDate>Mon, 12 Oct 2026 21:12:45 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	
+	<item>
+		<title>PJM Reviews September Hot Weather Operations</title>
+		<link>https://insidelines.pjm.com/pjm-reviews-september-hot-weather-operations/</link>
+		
+		<dc:creator><![CDATA[Jeffrey Shields]]></dc:creator>
+		<pubDate>Mon, 12 Oct 2026 18:24:50 +0000</pubDate>
+				<category><![CDATA[Operations]]></category>
+		<guid isPermaLink="false">https://insidelines.pjm.com/?p=210293</guid>
+
+					<description><![CDATA[<img width="139" height="81" src="https://insidelines.pjm.com/wp-content/uploads/2022/05/20190930-HOT-WEATHER-ALERT-SUN-NOAA-139x81.jpg" class="webfeedsFeaturedVisual wp-post-image" alt="" style="float: left; margin-right: 5px;" link_thumbnail="" decoding="async" />PJM and the PJM generation and transmission owners coordinated closely during two unseasonably warm September periods to reliably serve demand while managing tightening generation and transmission system constraints, PJM told the Operating Committee Thursday. Challenges common to two hot weather periods, Aug. 31 to Sept. 4 and Sept. 15–18, included the need to balance reliability [&#8230;]]]></description>
+										
+					
+		
+		
+			</item>
+<item>
+		<title>PJM Issues Maximum Generation Alert for Oct. 13, Extends Capacity Advisory to Oct. 14</title>
+		<link>https://insidelines.pjm.com/pjm-extends-capacity-advisory-to-oct-14/</link>
+		
+		<dc:creator><![CDATA[Jeffrey Shields]]></dc:creator>
+		<pubDate>Mon, 12 Oct 2026 15:30:04 +0000</pubDate>
+				<category><![CDATA[News]]></category>
+		<category><![CDATA[Operations]]></category>
+		<category><![CDATA[capacity advisory]]></category>
+		<guid isPermaLink="false">https://insidelines.pjm.com/?p=210290</guid>
+
+					<description><![CDATA[<img width="139" height="81" src="https://insidelines.pjm.com/wp-content/uploads/2019/07/controlroom5_1024x1024-139x81.jpg" class="webfeedsFeaturedVisual wp-post-image" alt="" style="float: left; margin-right: 5px;" link_thumbnail="" decoding="async" />PJM has issued a Maximum Generation Alert and Load Management Alert for Oct. 13 ahead of expected tight system conditions caused by unusually warm fall weather and planned equipment outages required for maintenance and construction. This alert does not require any action from customers. PJM also has a Capacity Advisory in place for Oct. 12–14 [&#8230;]]]></description>
+										
+					
+		
+		
+			</item>
+	</channel>
+</rss>

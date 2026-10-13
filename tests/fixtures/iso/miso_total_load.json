@@ -1,0 +1,43 @@
+{
+ "LoadInfo": {
+  "RefId": "12-Oct-2026 - Interval 20:40 EST",
+  "FiveMinTotalLoad": [
+   {
+    "Load": {
+     "Time": "00:00",
+     "Value": "70225"
+    }
+   },
+   {
+    "Load": {
+     "Time": "00:05",
+     "Value": "70001"
+    }
+   },
+   {
+    "Load": {
+     "Time": "20:25",
+     "Value": "90797"
+    }
+   },
+   {
+    "Load": {
+     "Time": "20:30",
+     "Value": "90467"
+    }
+   },
+   {
+    "Load": {
+     "Time": "20:35",
+     "Value": "90404"
+    }
+   },
+   {
+    "Load": {
+     "Time": "20:40",
+     "Value": "90156"
+    }
+   }
+  ]
+ }
+}
