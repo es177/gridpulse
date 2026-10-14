@@ -14,6 +14,21 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+
+def load_env(path: Path = Path(__file__).resolve().parent.parent / '.env') -> None:
+    """Local development only; on Vercel the project's environment variables apply."""
+    try:
+        lines = path.read_text().splitlines()
+    except OSError:
+        return
+    for line in lines:
+        key, sep, value = line.partition('=')
+        if sep and key.strip() and not key.lstrip().startswith('#'):
+            os.environ.setdefault(key.strip(), value.strip().strip('\'"'))
+
+
+load_env()
+
 from fastapi import FastAPI, Query  # noqa: E402
 from fastapi.responses import JSONResponse  # noqa: E402
 

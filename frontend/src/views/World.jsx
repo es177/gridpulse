@@ -3,8 +3,7 @@ import { useResource, EVERY } from '../lib/api'
 import { useRoute, setParam } from '../lib/router'
 import { useSort } from '../lib/hooks'
 import { gw, num, date } from '../lib/format'
-import { Panel, Stat, SourceTag, Th, Empty, LoadState } from '../components/ui'
-import './pages.css'
+import { Board, Tile, Metrics, Metric, SourceTag, Th, Meter, Empty, Skeleton, LoadState, U } from '../components/ui'
 
 export default function World() {
   const res = useResource('/api/global', EVERY.world)
@@ -20,67 +19,60 @@ export default function World() {
   const { sorted, sort, toggle } = useSort(visible, 'operable_mwe', 'desc')
   const max = Math.max(1, ...countries.map(c => c.operable_mwe ?? 0))
   const operating = countries.filter(c => c.operable > 0).length
+  const missing = data === null ? '—' : null
 
   const cells = (c, total) => (
     <>
       <td className="num">{num(c.operable)}</td>
-      <td className="num">
-        {!total && typeof c.operable_mwe === 'number' && <span className="bar-track"><span style={{ width: `${(c.operable_mwe / max) * 100}%` }} /></span>}
-        {gw(c.operable_mwe)}
-      </td>
+      <td className="num">{!total && <Meter value={c.operable_mwe} max={max} />}{gw(c.operable_mwe)}</td>
       <td className="num">{num(c.construction)}</td>
       <td className="num">{num(c.planned)}</td>
       <td className="num hide-sm">{num(c.proposed)}</td>
-      <td className="num">{typeof c.share_pct === 'number' ? `${c.share_approx ? '≈' : ''}${num(c.share_pct, 1)}%` : '—'}</td>
+      <td className="num">{typeof c.share_pct === 'number' ? `${c.share_approx ? '≈' : ''}${num(c.share_pct, 1)}` : '—'}</td>
       <td className="num hide-sm">{num(c.generation_twh, 1)}</td>
     </>
   )
 
   return (
-    <div className="stack">
-      <div className="page-head" style={{ marginBottom: 0 }}>
-        <h1>World nuclear fleet</h1>
-        <p>World Nuclear Association{data ? ` · generation year ${data.generation_year ?? '—'} · table updated ${date(data.updated, true)}` : ''}</p>
-        <span className="spacer" />
-        <SourceTag meta={res.data?.sources?.wna} name="WNA" />
+    <>
+      <LoadState res={res} what="world" />
+      <div className="bar">
+        <input className="input" type="search" data-search placeholder="filter countries" aria-label="Filter countries"
+          value={q} onChange={e => setQ(e.target.value)} />
+        {data && <span className="count">{visible.length}/{countries.length}</span>}
       </div>
-      <LoadState res={res} what="the world fleet table" />
-      <div className="stats">
-        <Stat label="Operable reactors" value={world ? num(world.operable) : data === null ? '—' : null} sub={world && `${gw(world.operable_mwe, 0)} GWe net`} />
-        <Stat label="Under construction" value={world ? num(world.construction) : data === null ? '—' : null} sub={world && `${gw(world.construction_mwe, 0)} GWe gross`} />
-        <Stat label="Planned" value={world ? num(world.planned) : data === null ? '—' : null} sub={world && `${gw(world.planned_mwe, 0)} GWe gross`} />
-        <Stat label="Countries with operable units" value={data ? num(operating) : null} sub={data && `${countries.length} countries listed`} />
-      </div>
-      <Panel title="By country" flush foot="Operable includes units not currently generating. Construction and planned capacity are gross MWe.">
-        <div style={{ padding: '12px 12px 0' }}>
-          <div className="toolbar">
-            <input className="input" type="search" data-search placeholder="Filter countries" aria-label="Filter countries"
-              value={q} onChange={e => setQ(e.target.value)} />
-            <span className="muted" style={{ fontSize: 12 }}>{visible.length} of {countries.length}</span>
-          </div>
-        </div>
-        {!data ? <div className="skeleton" style={{ height: 320, margin: 12 }} /> : (
-          <div className="table-wrap">
-            <table>
-              <thead><tr>
-                <Th k="name" sort={sort} onSort={toggle}>Country</Th>
-                <Th k="operable" sort={sort} onSort={toggle} num>Operable</Th>
-                <Th k="operable_mwe" sort={sort} onSort={toggle} num>Net GWe</Th>
-                <Th k="construction" sort={sort} onSort={toggle} num>Building</Th>
-                <Th k="planned" sort={sort} onSort={toggle} num>Planned</Th>
-                <Th k="proposed" sort={sort} onSort={toggle} num className="hide-sm">Proposed</Th>
-                <Th k="share_pct" sort={sort} onSort={toggle} num>Share of generation</Th>
-                <Th k="generation_twh" sort={sort} onSort={toggle} num className="hide-sm">{`TWh ${data.generation_year ?? ''}`}</Th>
-              </tr></thead>
-              <tbody>
-                {sorted.map(c => <tr key={c.name}><td>{c.name}</td>{cells(c, false)}</tr>)}
-                {world && !terms && <tr className="pinned"><td>World</td>{cells(world, true)}</tr>}
-              </tbody>
-            </table>
-            {!sorted.length && <Empty>No country matches “{q}”.</Empty>}
-          </div>
-        )}
-      </Panel>
-    </div>
+      <Board>
+        <Metrics>
+          <Metric label="Operable" value={world ? num(world.operable) : missing} note={world && `${gw(world.operable_mwe, 0)} GWe net`} tip="Includes units not currently generating" />
+          <Metric label="Building" value={world ? num(world.construction) : missing} note={world && `${gw(world.construction_mwe, 0)} GWe gross`} />
+          <Metric label="Planned" value={world ? num(world.planned) : missing} note={world && `${gw(world.planned_mwe, 0)} GWe gross`} />
+          <Metric label="Countries" value={data ? num(operating) : null} note={data && `of ${countries.length} listed`} tip="Countries with operable units" />
+        </Metrics>
+        <Tile flush label={<>By country{data ? ` · table ${date(data.updated, true)}` : ''}</>} meta={<SourceTag meta={res.data?.sources?.wna} name="WNA" />}
+          tip="World Nuclear Association. Operable capacity is net; construction and planned capacity are gross.">
+          {!data ? <Skeleton height={320} /> : (
+            <div className="table-wrap">
+              <table>
+                <thead><tr>
+                  <Th k="name" sort={sort} onSort={toggle}>Country</Th>
+                  <Th k="operable" sort={sort} onSort={toggle} num>Operable</Th>
+                  <Th k="operable_mwe" sort={sort} onSort={toggle} num>Net <U>GWe</U></Th>
+                  <Th k="construction" sort={sort} onSort={toggle} num>Building</Th>
+                  <Th k="planned" sort={sort} onSort={toggle} num>Planned</Th>
+                  <Th k="proposed" sort={sort} onSort={toggle} num className="hide-sm">Proposed</Th>
+                  <Th k="share_pct" sort={sort} onSort={toggle} num>Share <U>%</U></Th>
+                  <Th k="generation_twh" sort={sort} onSort={toggle} num className="hide-sm"><U>TWh {data.generation_year ?? ''}</U></Th>
+                </tr></thead>
+                <tbody>
+                  {sorted.map(c => <tr key={c.name}><td>{c.name}</td>{cells(c, false)}</tr>)}
+                  {world && !terms && <tr className="pinned"><td>World</td>{cells(world, true)}</tr>}
+                </tbody>
+              </table>
+              {!sorted.length && <Empty>no match</Empty>}
+            </div>
+          )}
+        </Tile>
+      </Board>
+    </>
   )
 }

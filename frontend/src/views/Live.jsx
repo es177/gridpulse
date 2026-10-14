@@ -6,27 +6,25 @@ import { gw, num, pct, time } from '../lib/format'
 import { mixSummary } from '../lib/derive'
 import { FUELS, FUEL_LABEL, displayMix } from '../lib/fuels'
 import TimeChart from '../components/TimeChart'
-import { Panel, SourceTag, MixBar, FuelLegend, Label, Empty, LoadState } from '../components/ui'
-import './pages.css'
+import { Board, Tile, SourceTag, MixBar, FuelLegend, Tag, Empty, Skeleton, LoadState, U } from '../components/ui'
 
 const gwFormat = v => `${num(v / 1000, 1)} GW`
 const STALE_MS = 30 * 60_000
-const LOAD_NOTE = {
-  caiso: 'Load is current demand.',
-  ercot: 'Load is system demand.',
-  spp: 'Load is actual load.',
-  miso: 'Load is total load.',
-  nyiso: 'Load is the sum of 11 zone loads.',
-  isone: 'Load is metered system load, excluding behind-the-meter solar.',
+const LOAD_MEANS = {
+  caiso: 'Current demand',
+  ercot: 'System demand',
+  spp: 'Actual load',
+  miso: 'Total load',
+  nyiso: 'Sum of 11 zone loads',
+  isone: 'Metered system load, excluding behind-the-meter solar',
 }
-const IMPORTS = new Set(['caiso', 'miso', 'isone'])
 
 const isStale = (iso, now) => !iso || now - Date.parse(iso) > STALE_MS
 
 function scrollToIso(key) {
   const el = document.getElementById(key)
   if (!el) return
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
   el.classList.add('flash')
   setTimeout(() => el.classList.remove('flash'), 1600)
 }
@@ -36,24 +34,35 @@ function focusIso(key) {
   scrollToIso(key)
 }
 
-function Delayed({ iso }) {
+function SummaryTile({ isos, sources }) {
   const now = useNow()
-  return isStale(iso, now) ? <Label tone="warn" title="No observation in the last 30 minutes">Delayed</Label> : null
-}
-
-function SummaryRow({ iso, meta }) {
-  const now = useNow()
-  const s = mixSummary(iso.mix)
   return (
-    <tr className="clickable" onClick={() => focusIso(iso.key)}>
-      <td><span className="source" style={{ color: 'var(--fg)', fontSize: 13 }}><SourceTag meta={meta} showLabel={false} />{iso.iso}</span></td>
-      <td className="num">{gw(iso.load_mw)} <span className="subtle">GW</span></td>
-      <td style={{ width: '30%' }}>{iso.mix ? <MixBar mix={iso.mix} /> : <span className="subtle">No data</span>}</td>
-      <td className="num">{pct(s?.renewable)}</td>
-      <td className="num hide-sm">{typeof iso.mix?.imports === 'number' ? <>{gw(iso.mix.imports)} <span className="subtle">GW</span></> : '—'}</td>
-      <td className="num hide-sm">{iso.price ? <>${num(iso.price.usd_mwh, 2)} <span className="subtle">/MWh</span></> : '—'}</td>
-      <td className={`num ${isStale(iso.observed_at, now) ? 'down' : 'muted'}`}>{time(iso.observed_at)}</td>
-    </tr>
+    <Tile flush label="Operators · 5 min">
+      <div className="table-wrap">
+        <table>
+          <thead><tr>
+            <th>ISO</th><th className="num">Load <U>GW</U></th><th style={{ width: '32%' }}>Mix</th><th className="num">Renew.</th>
+            <th className="num hide-sm">Net imp. <U>GW</U></th><th className="num hide-sm">Price <U>$/MWh</U></th><th className="num">Time</th>
+          </tr></thead>
+          <tbody>
+            {isos.map(iso => {
+              const s = mixSummary(iso.mix)
+              return (
+                <tr key={iso.key} className="clickable" onClick={() => focusIso(iso.key)}>
+                  <td><span className="src" style={{ color: 'var(--fg)', fontSize: 13, fontFamily: 'var(--sans)' }}><SourceTag meta={sources[`iso_${iso.key}`]} showLabel={false} />{iso.iso}</span></td>
+                  <td className="num">{gw(iso.load_mw)}</td>
+                  <td>{iso.mix ? <MixBar mix={iso.mix} /> : <span className="subtle mono">—</span>}</td>
+                  <td className="num">{pct(s?.renewable)}</td>
+                  <td className="num hide-sm">{typeof iso.mix?.imports === 'number' ? gw(iso.mix.imports) : '—'}</td>
+                  <td className="num hide-sm">{iso.price ? num(iso.price.usd_mwh, 2) : '—'}</td>
+                  <td className={`num ${isStale(iso.observed_at, now) ? 'warn' : 'subtle'}`}>{time(iso.observed_at)}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </Tile>
   )
 }
 
@@ -71,41 +80,32 @@ function useIsoChart(series) {
       }
     }
     const loads = points.filter(p => typeof p.load_mw === 'number')
-    return {
-      mode: 'load',
-      x: loads.map(p => Date.parse(p.t)),
-      series: [{ label: 'Load', values: loads.map(p => p.load_mw), color: 'var(--series-1)' }],
-    }
+    return { mode: 'load', x: loads.map(p => Date.parse(p.t)), series: [{ label: 'Load', values: loads.map(p => p.load_mw) }] }
   }, [series])
 }
 
-function IsoPanel({ iso, meta }) {
+function IsoTile({ iso, meta }) {
+  const now = useNow()
   const s = mixSummary(iso.mix)
   const chart = useIsoChart(iso.series)
-  const foot = `${LOAD_NOTE[iso.key] || ''}${IMPORTS.has(iso.key) ? ' Net imports reported.' : ''}`
-  const title = (
-    <>{iso.iso}<span className="title-sub">{iso.name}</span> <Delayed iso={iso.observed_at} /></>
-  )
+  const label = <>{iso.iso} <span className="u">· {iso.name}</span></>
   return (
-    <div id={iso.key} className="anchor">
-      <Panel title={title} meta={<SourceTag meta={meta} name="Source" />} foot={foot}>
-        {!iso.mix && !iso.series?.length ? <Empty>No data received from {iso.iso} yet.</Empty> : <>
-          <div className="kv">
-            <span>Load<b>{gw(iso.load_mw)}<small>GW</small></b></span>
-            <span>Renewables<b>{pct(s?.renewable)}</b></span>
-            <span>Largest<b style={{ fontFamily: 'var(--sans)' }}>{s ? FUEL_LABEL[s.top] : '—'}</b></span>
-            {iso.price && <span title={iso.price.label}>Price<b>${num(iso.price.usd_mwh, 2)}<small>/MWh</small></b></span>}
-            <span>As of<b>{time(iso.observed_at)}</b></span>
-          </div>
-          {chart.mode === 'load' && iso.mix && <p className="chart-note">Publishes only the latest mix. Chart shows load.</p>}
-          {chart.x.length >= 2
-            ? <TimeChart x={chart.x} series={chart.series} stacked={chart.mode === 'mix'} height={180} format={gwFormat}
-                ariaLabel={`${iso.iso} ${chart.mode === 'mix' ? 'generation by fuel' : 'load'} today`} />
-            : <Empty>Not enough intervals today to chart.</Empty>}
-          {iso.mix && <div style={{ marginTop: 8 }}><FuelLegend mix={iso.mix} /></div>}
-        </>}
-      </Panel>
-    </div>
+    <Tile span={6} id={iso.key} label={label} meta={<>{isStale(iso.observed_at, now) && <Tag tone="warn">delayed</Tag>}<SourceTag meta={meta} showLabel={false} /><span>{time(iso.observed_at)}</span></>}>
+      {!iso.mix && !iso.series?.length ? <Empty>no data</Empty> : <>
+        <div className="kv">
+          <div title={LOAD_MEANS[iso.key]}><span className="label">Load</span><b>{gw(iso.load_mw)}<small>GW</small></b></div>
+          <div><span className="label">Renew.</span><b>{pct(s?.renewable)}</b></div>
+          <div><span className="label">Top</span><b>{s ? FUEL_LABEL[s.top] : '—'}</b></div>
+          {iso.price && <div title={iso.price.label}><span className="label">Price</span><b>{num(iso.price.usd_mwh, 2)}<small>$/MWh</small></b></div>}
+        </div>
+        {chart.x.length >= 2
+          ? <TimeChart x={chart.x} series={chart.series} stacked={chart.mode === 'mix'} area={chart.mode === 'load'} height={170} format={gwFormat}
+              ariaLabel={`${iso.iso} ${chart.mode === 'mix' ? 'generation by fuel' : 'load'} today`} />
+          : <Empty>too few intervals today</Empty>}
+        {chart.mode === 'load' && <div className="legend"><span>load · mix history not published</span></div>}
+        {iso.mix && <FuelLegend mix={iso.mix} />}
+      </>}
+    </Tile>
   )
 }
 
@@ -122,28 +122,14 @@ export default function Live() {
   }, [ready, target])
 
   return (
-    <div className="stack">
-      <div className="page-head" style={{ marginBottom: 0 }}>
-        <h1>Live grid operators</h1>
-        <p>Five-minute data from six US grid operators. PJM and the rest of the country are hourly on the <a href="#/grid">Grid</a> page.</p>
-      </div>
-      <LoadState res={res} what="operator data" />
-      {!ready ? <div className="skeleton" style={{ height: 240 }} /> : <>
-        <Panel title="Summary" flush>
-          <div className="table-wrap">
-            <table>
-              <thead><tr>
-                <th>Operator</th><th className="num">Load</th><th>Generation mix</th><th className="num">Renewables</th>
-                <th className="num hide-sm">Net imports</th><th className="num hide-sm">Price</th><th className="num">Updated</th>
-              </tr></thead>
-              <tbody>{isos.map(i => <SummaryRow key={i.key} iso={i} meta={sources[`iso_${i.key}`]} />)}</tbody>
-            </table>
-          </div>
-        </Panel>
-        <div className="grid-2">
-          {isos.map(i => <IsoPanel key={i.key} iso={i} meta={sources[`iso_${i.key}`]} />)}
-        </div>
-      </>}
-    </div>
+    <>
+      <LoadState res={res} what="live" />
+      {!ready ? <Board><Tile label="Operators"><Skeleton height={240} /></Tile></Board> : (
+        <Board>
+          <SummaryTile isos={isos} sources={sources} />
+          {isos.map(i => <IsoTile key={i.key} iso={i} meta={sources[`iso_${i.key}`]} />)}
+        </Board>
+      )}
+    </>
   )
 }

@@ -5,8 +5,7 @@ import { useRoute, setParam } from '../lib/router'
 import { date, gw, num, signed } from '../lib/format'
 import { filterUnits } from '../lib/derive'
 import TimeChart from '../components/TimeChart'
-import { Panel, Stat, SourceTag, Seg, Th, Spark, Empty, LoadState } from '../components/ui'
-import './reactors.css'
+import { Board, Tile, Metrics, Metric, SourceTag, Seg, Th, Spark, Meter, Empty, Skeleton, LoadState, U } from '../components/ui'
 
 const ReactorMap = lazy(() => import('./ReactorMap'))
 
@@ -14,11 +13,10 @@ const TONE = { full: 'ok', reduced: 'warn', offline: 'bad', unknown: '' }
 const pctFormat = v => `${num(v, 0)}%`
 const COLUMNS = 9
 
-/** Search box state that mirrors ?q= without fighting the user's typing. */
 function History({ dates, unit }) {
   const x = useMemo(() => dates.map(d => Date.parse(`${d}T12:00:00Z`)), [dates])
-  const series = useMemo(() => [{ label: 'Power', values: unit.power, color: 'var(--series-1)' }], [unit.power])
-  return <TimeChart x={x} series={series} height={160} yMin={0} format={pctFormat} ariaLabel={`${unit.name} reported power, last ${dates.length} reports`} />
+  const series = useMemo(() => [{ label: 'Power', values: unit.power }], [unit.power])
+  return <TimeChart x={x} series={series} area height={150} yMin={0} format={pctFormat} ariaLabel={`${unit.name} reported power, last ${dates.length} reports`} />
 }
 
 function Detail({ unit, dates }) {
@@ -28,11 +26,11 @@ function Detail({ unit, dates }) {
         <History dates={dates} unit={unit} />
         <dl className="facts">
           <div><dt>Docket</dt><dd className="mono">{unit.docket || '—'}</dd></div>
-          <div><dt>Licensed thermal</dt><dd className="mono">{num(unit.mwt, 0)} MWt</dd></div>
+          <div><dt>Thermal</dt><dd className="mono">{num(unit.mwt, 0)} MWt</dd></div>
           <div><dt>Nameplate</dt><dd className="mono">{num(unit.mwe, 0)} MWe</dd></div>
           <div><dt>Type</dt><dd>{unit.type || '—'}</dd></div>
           <div><dt>Operator</dt><dd>{unit.operator || '—'}</dd></div>
-          <div><dt>Source</dt><dd>{unit.url ? <a href={unit.url} target="_blank" rel="noreferrer">NRC unit page ↗</a> : '—'}</dd></div>
+          <div><dt>NRC</dt><dd>{unit.url ? <a href={unit.url} target="_blank" rel="noreferrer">unit page ↗</a> : '—'}</dd></div>
         </dl>
       </td>
     </tr>
@@ -48,13 +46,13 @@ function UnitTable({ rows, dates, openUnit, onToggle }) {
       <table>
         <thead><tr>
           <Th k="name" sort={sort} onSort={toggle}>Unit</Th>
-          <Th k="state" sort={sort} onSort={toggle}>State</Th>
+          <Th k="state" sort={sort} onSort={toggle}>St</Th>
           <Th k="type" sort={sort} onSort={toggle} className="hide-sm">Type</Th>
           <Th k="operator" sort={sort} onSort={toggle} className="hide-sm">Operator</Th>
-          <Th k="today" sort={sort} onSort={toggle}>Power</Th>
-          <Th k="change" sort={sort} onSort={toggle} num>Δ</Th>
-          <th className="hide-sm">Last 30 reports</th>
-          <Th k="avg30" sort={sort} onSort={toggle} num className="hide-sm">30-report avg</Th>
+          <Th k="today" sort={sort} onSort={toggle}>Power <U>%</U></Th>
+          <Th k="change" sort={sort} onSort={toggle} num>Δ <U>pt</U></Th>
+          <th className="hide-sm">30 reports</th>
+          <Th k="avg30" sort={sort} onSort={toggle} num className="hide-sm">Avg <U>%</U></Th>
           <Th k="since" sort={sort} onSort={toggle}>Since</Th>
         </tr></thead>
         <tbody>
@@ -64,20 +62,15 @@ function UnitTable({ rows, dates, openUnit, onToggle }) {
               <Fragment key={u.name}>
                 <tr id={`unit-${u.docket || u.name}`} className={`clickable${open ? ' open' : ''}`} tabIndex={0} aria-expanded={open}
                   onClick={() => onToggle(u.name)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(u.name) } }}>
-                  <td className="unit-name">{u.name}</td>
-                  <td>{u.state || '—'}</td>
-                  <td className="hide-sm">{u.type || '—'}</td>
-                  <td className="hide-sm" title={u.operator || undefined}>{u.operator ? (u.operator.length > 28 ? `${u.operator.slice(0, 27)}…` : u.operator) : '—'}</td>
-                  <td>
-                    <span className="power" title={`${u.today ?? '—'}% reported power`}>
-                      <span className="bar-track"><span className={TONE[u.status]} style={{ width: `${Math.max(u.today ?? 0, 0)}%` }} /></span>
-                      <span className="mono">{u.today ?? '—'}%</span>
-                    </span>
-                  </td>
-                  <td className={`num ${u.change < 0 ? 'down' : u.change > 0 ? 'up' : 'subtle'}`} title="Percentage points vs previous report">{u.change ? signed(u.change, 0) : u.change === 0 ? '0' : '—'}</td>
+                  <td className="strong">{u.name}</td>
+                  <td className="mono muted">{u.state || '—'}</td>
+                  <td className="hide-sm mono muted">{u.type || '—'}</td>
+                  <td className="hide-sm muted" title={u.operator || undefined}>{u.operator ? (u.operator.length > 28 ? `${u.operator.slice(0, 27)}…` : u.operator) : '—'}</td>
+                  <td className="mono"><Meter value={u.today} tone={TONE[u.status]} />{u.today ?? '—'}</td>
+                  <td className={`num ${u.change < 0 ? 'bad' : u.change > 0 ? 'ok' : 'subtle'}`}>{u.change ? signed(u.change, 0) : u.change === 0 ? '0' : '—'}</td>
                   <td className="hide-sm"><Spark values={u.spark} min={0} max={100} width={110} /></td>
-                  <td className="num hide-sm">{u.avg30 == null ? '—' : `${num(u.avg30, 0)}%`}</td>
-                  <td className="mono muted">{u.since ? `${u.since === first ? '≥ ' : ''}${date(u.since, u.since.slice(0, 4) !== thisYear)}` : '—'}</td>
+                  <td className="num hide-sm">{u.avg30 == null ? '—' : num(u.avg30, 0)}</td>
+                  <td className="mono subtle">{u.since ? `${u.since === first ? '≥ ' : ''}${date(u.since, u.since.slice(0, 4) !== thisYear)}` : '—'}</td>
                 </tr>
                 {open && <Detail unit={u} dates={dates} />}
               </Fragment>
@@ -119,49 +112,43 @@ export default function Reactors() {
   const fleet = data?.fleet
   const toggleUnit = name => setParam('unit', name === openUnit ? null : name)
   const openInTable = name => { scrolled.current = null; setParam('unit', name); setParam('view', null) }
+  const meta = <SourceTag meta={data?.sources?.nrc_status} name="NRC" />
 
   return (
-    <div className="stack">
-      <div className="page-head" style={{ marginBottom: 0 }}>
-        <h1>Reactors</h1>
-        <p>NRC daily power report · {date(data?.report_date, true)}</p>
-        <span className="spacer" />
-        <SourceTag meta={data?.sources?.nrc_status} name="NRC" />
+    <>
+      <LoadState res={res} what="reactors" />
+      <div className="bar">
+        <input className="input" type="search" data-search value={q} onChange={e => setQ(e.target.value)}
+          placeholder="filter unit, state, operator, docket" aria-label="Filter reactors" />
+        <Seg label="Power status" value={status} onChange={s => setParam('status', s === 'all' ? null : s)} options={[
+          ['all', 'all', searched.length], ['full', 'full', tally('full')], ['reduced', 'reduced', tally('reduced')], ['offline', 'offline', tally('offline')],
+        ]} />
+        <Seg label="View" value={view} onChange={v => setParam('view', v === 'table' ? null : v)} options={[['table', 'table'], ['map', 'map']]} />
+        {data && <span className="count">{shown.length}/{rows.length}</span>}
       </div>
-      <LoadState res={res} what="reactor status" />
-      <div className="stats">
-        <Stat label="Operating units" value={fleet ? num(fleet.units) : null} sub="In the latest NRC report" />
-        <Stat label="At full power" value={fleet ? num(fleet.full) : null} sub="≥95% reported power" />
-        <Stat label="Reduced" value={fleet ? num(fleet.reduced) : null} sub="1–94% reported power" />
-        <Stat label="Offline" value={fleet ? num(fleet.offline) : null} sub="0% reported power" />
-        <Stat label="Estimated output" value={fleet ? gw(fleet.online_mw) : null} unit={fleet && `of ${gw(fleet.capacity_mw)} GW`} sub="% power × nameplate MWe" />
-        <Stat label="Changed" value={fleet ? num(fleet.changed) : null} sub="Since the previous report" />
-      </div>
-      <div>
-        <div className="toolbar">
-          <input className="input" type="search" data-search value={q} onChange={e => setQ(e.target.value)}
-            placeholder="Filter by unit, state, operator, type or docket" aria-label="Filter reactors" />
-          <Seg label="Power status" value={status} onChange={s => setParam('status', s === 'all' ? null : s)} options={[
-            ['all', `All ${searched.length}`], ['full', `Full ${tally('full')}`], ['reduced', `Reduced ${tally('reduced')}`], ['offline', `Offline ${tally('offline')}`],
-          ]} />
-          <Seg label="View" value={view} onChange={v => setParam('view', v === 'table' ? null : v)} options={[['table', 'Table'], ['map', 'Map']]} />
-          {data && <span className="muted" style={{ fontSize: 12 }}>{shown.length} of {rows.length} units</span>}
-        </div>
+      <Board>
+        <Metrics>
+          <Metric label="Units" value={fleet ? num(fleet.units) : null} note={data && `NRC ${date(data.report_date)}`} />
+          <Metric label="Full" value={fleet ? num(fleet.full) : null} note="≥ 95%" />
+          <Metric label="Reduced" value={fleet ? num(fleet.reduced) : null} note="1–94%" tone={fleet?.reduced ? 'warn' : ''} />
+          <Metric label="Offline" value={fleet ? num(fleet.offline) : null} note="0%" tone={fleet?.offline ? 'bad' : ''} />
+          <Metric label="Output" value={fleet ? gw(fleet.online_mw) : null} unit={fleet && `/ ${gw(fleet.capacity_mw)} GW`} note="est." tip="Reported % power × nameplate MWe" />
+          <Metric label="Changed" value={fleet ? num(fleet.changed) : null} note="vs prior report" />
+        </Metrics>
         {view === 'map' ? (
-          <Panel title="Map" flush meta={<span>Albers USA projection</span>}>
-            <Suspense fallback={<div className="skeleton" style={{ height: 420, margin: 12 }} />}>
+          <Tile flush label="Map" meta={meta}>
+            <Suspense fallback={<Skeleton height={420} />}>
               <ReactorMap units={shown} selected={openUnit} onSelect={name => setParam('unit', name)} onOpen={openInTable} />
             </Suspense>
-          </Panel>
+          </Tile>
         ) : (
-          <Panel title="Units" flush meta={<span>Click a row for its {dates.length}-report history</span>}
-            foot="Power is the percent of licensed thermal power reported each morning. Δ is the change in percentage points since the previous report.">
-            {!data ? <div className="skeleton" style={{ height: 320, margin: 12 }} />
+          <Tile flush label="Units" meta={meta} tip="Percent of licensed thermal power reported each morning. Δ: change in points since the previous report.">
+            {!data ? <Skeleton height={320} />
               : shown.length ? <UnitTable rows={shown} dates={dates} openUnit={openUnit} onToggle={toggleUnit} />
-                : <Empty>No units match these filters. <button className="btn" type="button" onClick={() => { setQ(''); setParam('status', null) }}>Clear filters</button></Empty>}
-          </Panel>
+                : <Empty>no match · <button className="btn bare" type="button" onClick={() => { setQ(''); setParam('status', null) }}>clear</button></Empty>}
+          </Tile>
         )}
-      </div>
-    </div>
+      </Board>
+    </>
   )
 }

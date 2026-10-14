@@ -25,13 +25,28 @@ export function ago(iso, now = Date.now()) {
   return `${Math.floor(s / 86400)}d ago`
 }
 
+/** Age without the suffix, for tight spaces: "4m", "2h". */
+export const age = (iso, now = Date.now()) => ago(iso, now).replace(' ago', '')
+
+// Times use a 24-hour clock in the viewer's timezone.
 const fmt = opts => new Intl.DateTimeFormat('en-US', opts)
-const clock = fmt({ hour: 'numeric', minute: '2-digit' })
-const dayTime = fmt({ month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+const H23 = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
+const clock = fmt(H23)
+const dayTime = fmt({ month: 'short', day: 'numeric', ...H23 })
 const dayOnly = fmt({ month: 'short', day: 'numeric' })
 const dayYear = fmt({ month: 'short', day: 'numeric', year: 'numeric' })
-const full = fmt({ dateStyle: 'medium', timeStyle: 'short' })
+const monthShort = fmt({ month: 'short', year: '2-digit' })
+const full = fmt({ year: 'numeric', month: 'short', day: 'numeric', ...H23, timeZoneName: 'short' })
 const valid = iso => iso && Number.isFinite(Date.parse(iso))
+export const zone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'local time'
+
+/** Axis tick labels: clock times within a day, dates across days, months across months. */
+export function tick(seconds, step) {
+  const d = new Date(seconds * 1000)
+  if (step >= 28 * 86400) return monthShort.format(d)
+  if (step >= 86400 || (d.getHours() === 0 && d.getMinutes() === 0)) return dayOnly.format(d)
+  return clock.format(d)
+}
 
 export const time = iso => (valid(iso) ? clock.format(new Date(iso)) : DASH)
 export const when = iso => (valid(iso) ? dayTime.format(new Date(iso)) : DASH)

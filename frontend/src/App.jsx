@@ -3,7 +3,7 @@ import { useRoute, navigate } from './lib/router'
 import { EVERY, reloadAll, useActivity, useResource, useSources } from './lib/api'
 import { useNow } from './lib/hooks'
 import { sourceState } from './lib/status'
-import { ago } from './lib/format'
+import { age, zone } from './lib/format'
 import { Icon } from './components/ui'
 import Overview from './views/Overview'
 import Grid from './views/Grid'
@@ -17,7 +17,7 @@ import Sources from './views/Sources'
 export const ROUTES = [
   { path: '/', label: 'Overview', key: 'o', View: Overview },
   { path: '/grid', label: 'Grid', key: 'g', View: Grid },
-  { path: '/live', label: 'Live ISOs', key: 'l', View: Live },
+  { path: '/live', label: 'Live', key: 'l', View: Live },
   { path: '/reactors', label: 'Reactors', key: 'r', View: Reactors },
   { path: '/feed', label: 'Feed', key: 'f', View: Feed },
   { path: '/prices', label: 'Prices', key: 'p', View: Prices },
@@ -33,11 +33,11 @@ function Health() {
   if (!states.length) return null
   const bad = states.filter(s => s === 'down').length
   const warn = states.filter(s => s === 'stale' || s === 'degraded').length
+  const ok = states.filter(s => s === 'ok').length
   const tone = bad ? 'down' : warn ? 'stale' : 'ok'
-  const text = bad || warn ? `${bad + warn} of ${states.length} sources need attention` : `${states.length} sources current`
   return (
-    <a className="source" href="#/sources" title="Source status">
-      <span className={`dot ${tone}`} /> <span className="hide-sm">{text}</span>
+    <a className="btn bare" href="#/sources" title={`${ok} of ${states.length} sources current${bad ? ` · ${bad} down` : ''}${warn ? ` · ${warn} stale or retrying` : ''}`}>
+      <span className={`dot ${tone}`} />{ok}/{states.length}
     </a>
   )
 }
@@ -46,10 +46,10 @@ function Refresh() {
   const { loading, last, failed } = useActivity()
   const now = useNow()
   return (
-    <button className="btn" type="button" onClick={reloadAll} disabled={loading} title="Refresh now (r)">
+    <button className="btn bare" type="button" onClick={reloadAll} disabled={loading} title={failed ? `Refresh (r) · ${failed} request(s) failed, showing last data` : 'Refresh (r)'}>
       <span className={loading ? 'spin' : ''} style={{ display: 'inline-flex' }}>{Icon.sync}</span>
-      <span className="hide-sm">{loading ? 'Updating' : last ? `Updated ${ago(new Date(last).toISOString(), now)}` : 'Refresh'}</span>
-      {failed > 0 && !loading && <span className="dot stale" title={`${failed} request(s) failed; showing last good data`} />}
+      <span style={{ minWidth: '3ch' }}>{last ? age(new Date(last).toISOString(), now) : '—'}</span>
+      {failed > 0 && !loading && <span className="dot stale" />}
     </button>
   )
 }
@@ -58,12 +58,12 @@ function Help({ onClose }) {
   return (
     <div className="overlay" onClick={onClose}>
       <div className="dialog" role="dialog" aria-label="Keyboard shortcuts" onClick={e => e.stopPropagation()}>
-        <header className="panel-head"><h2>Keyboard shortcuts</h2><div className="meta"><button className="btn" onClick={onClose}>Esc</button></div></header>
+        <header className="tile-head"><h2 className="tile-label">Keys</h2><div className="tile-meta"><button className="btn bare" onClick={onClose}>esc</button></div></header>
         <div className="keys">
           {ROUTES.map(r => <Fragment key={r.path}><span><kbd>g</kbd> <kbd>{r.key}</kbd></span><span>{r.label}</span></Fragment>)}
-          <span><kbd>/</kbd></span><span>Focus search or filter</span>
-          <span><kbd>r</kbd></span><span>Refresh all data</span>
-          <span><kbd>?</kbd></span><span>Show this help</span>
+          <span><kbd>/</kbd></span><span>Search</span>
+          <span><kbd>r</kbd></span><span>Refresh</span>
+          <span><kbd>?</kbd></span><span>Keys</span>
         </div>
       </div>
     </div>
@@ -114,24 +114,23 @@ export default function App() {
     <>
       <header className="header" ref={header}>
         <div className="header-row">
-          <a className="brand" href="#/">{Icon.pulse}<span>GridPulse</span></a>
-          <span className="subtle hide-sm" style={{ fontSize: 12 }}>US grid and nuclear fleet, live from public sources</span>
-          <div className="header-tools">
+          <a className="brand" href="#/">{Icon.pulse}gridpulse</a>
+          <nav className="nav" aria-label="Sections">
+            {ROUTES.map(r => (
+              <a key={r.path} href={`#${r.path}`} aria-current={r === route ? 'page' : undefined}>{r.label}</a>
+            ))}
+          </nav>
+          <div className="tools">
             <Health />
             <Refresh />
-            <button className="btn hide-sm" type="button" onClick={() => setHelp(true)} title="Keyboard shortcuts (?)"><kbd>?</kbd></button>
+            <button className="btn bare hide-sm" type="button" onClick={() => setHelp(true)} title="Keys (?)">?</button>
           </div>
         </div>
-        <nav className="nav" aria-label="Sections">
-          {ROUTES.map(r => (
-            <a key={r.path} href={`#${r.path}`} aria-current={r === route ? 'page' : undefined}>{r.label}</a>
-          ))}
-        </nav>
       </header>
       <main><View /></main>
       <footer>
-        <span>Public data from EIA, NRC, US grid operators, the World Nuclear Association and publisher feeds. Times are shown in your timezone.</span>
-        <a href="#/sources">Sources and status</a>
+        <a href="#/sources">EIA · NRC · CAISO · ERCOT · SPP · MISO · NYISO · ISO-NE · WNA</a>
+        <span>{zone()}</span>
       </footer>
       {help && <Help onClose={() => setHelp(false)} />}
     </>

@@ -4,8 +4,7 @@ import { useRoute, setParam } from '../lib/router'
 import { useSort } from '../lib/hooks'
 import { num, signed, month } from '../lib/format'
 import TimeChart from '../components/TimeChart'
-import { Panel, Stat, SourceTag, Seg, Th, Empty, LoadState } from '../components/ui'
-import './pages.css'
+import { Board, Tile, Metrics, Metric, SourceTag, Seg, Th, Meter, Empty, Skeleton, LoadState, U } from '../components/ui'
 
 const SECTORS = [['res', 'Residential'], ['com', 'Commercial'], ['ind', 'Industrial'], ['all', 'All sectors']]
 const SECTOR_LABEL = Object.fromEntries(SECTORS)
@@ -16,16 +15,17 @@ function UsTrend({ history, sector }) {
     const points = (history || []).filter(p => typeof p[sector] === 'number')
     return {
       x: points.map(p => Date.parse(`${p.period}-15T00:00:00Z`)),
-      series: [{ label: `US ${SECTOR_LABEL[sector].toLowerCase()}`, values: points.map(p => p[sector]), color: 'var(--series-1)' }],
+      series: [{ label: 'US', values: points.map(p => p[sector]) }],
     }
   }, [history, sector])
   return (
-    <Panel title={`US average, ${SECTOR_LABEL[sector].toLowerCase()}`}>
-      {x.length >= 2
-        ? <TimeChart x={x} series={series} height={160} format={centsFormat} ariaLabel="US average retail price by month" />
-        : <Empty>Not enough months to chart.</Empty>}
-      {x.length > 0 && x.length < 6 && <p className="chart-note" style={{ margin: '8px 0 0' }}>The current source returns only the latest month and the same month a year earlier.</p>}
-    </Panel>
+    <Tile span={4} label={<>US average · <b>{SECTOR_LABEL[sector]}</b></>}>
+      <div className="stick">
+        {x.length >= 2
+          ? <TimeChart x={x} series={series} area height={180} format={centsFormat} ariaLabel="US average retail price by month" />
+          : <Empty>too few months</Empty>}
+      </div>
+    </Tile>
   )
 }
 
@@ -46,68 +46,60 @@ export default function Prices() {
   const visible = rows.filter(r => !terms || r.name.toLowerCase().includes(terms) || r.state.toLowerCase() === terms)
   const { sorted, sort, toggle } = useSort(visible, 'price', 'desc')
   const max = Math.max(0, ...visible.map(r => r.price ?? 0), us?.[sector] ?? 0) || 1
-  const bar = v => (typeof v === 'number' ? <span className="bar-track"><span style={{ width: `${(v / max) * 100}%` }} /></span> : null)
 
   return (
-    <div className="stack">
-      <div className="page-head" style={{ marginBottom: 0 }}>
-        <h1>Retail electricity prices</h1>
-        <p>{data ? `${month(data.period)} · average revenue per kWh sold, EIA` : 'Average revenue per kWh sold, EIA'}</p>
-        <span className="spacer" />
-        <SourceTag meta={res.data?.sources?.eia_prices} name="EIA" />
-      </div>
+    <>
       <LoadState res={res} what="prices" />
-      <div className="stats">
-        {SECTORS.map(([key, label]) => (
-          <Stat key={key} label={`US ${label.toLowerCase()}`} value={us ? num(us[key], 2) : data === null ? '—' : null} unit="¢/kWh"
-            sub={us && `${signed(us[`${key}_yoy`], 1, '%')} vs a year earlier`} />
-        ))}
+      <div className="bar">
+        <Seg label="Sector" options={SECTORS.map(([k, l]) => [k, l.toLowerCase()])} value={sector} onChange={key => setParam('sector', key === 'res' ? null : key)} />
+        <input className="input" type="search" data-search placeholder="filter states" aria-label="Filter states"
+          value={q} onChange={e => setQ(e.target.value)} />
+        {data && <span className="count">{visible.length}/{rows.length}</span>}
       </div>
-      <div className="cols">
-        <Panel title={`By state, ${SECTOR_LABEL[sector].toLowerCase()}`} flush
-          foot="Monthly averages, about three months behind. Not a tariff or wholesale price.">
-          <div style={{ padding: '12px 12px 0' }}>
-            <div className="toolbar">
-              <Seg label="Sector" options={SECTORS} value={sector} onChange={key => setParam('sector', key === 'res' ? null : key)} />
-              <input className="input" type="search" data-search placeholder="Filter states" aria-label="Filter states"
-                value={q} onChange={e => setQ(e.target.value)} />
-              <span className="muted" style={{ fontSize: 12 }}>{visible.length} of {rows.length}</span>
-            </div>
-          </div>
-          {!data ? <div className="skeleton" style={{ height: 320, margin: 12 }} /> : (
+      <Board>
+        <Metrics>
+          {SECTORS.map(([key, label]) => (
+            <Metric key={key} label={label} value={us ? num(us[key], 2) : data === null ? '—' : null} unit="¢/kWh"
+              note={us && `${signed(us[`${key}_yoy`], 1, '%')} y/y`} />
+          ))}
+        </Metrics>
+        <Tile span={8} flush label={<>By state · <b>{SECTOR_LABEL[sector]}</b>{data ? ` · ${month(data.period)}` : ''}</>}
+          meta={<SourceTag meta={res.data?.sources?.eia_prices} name="EIA" />}
+          tip="Average revenue per kWh sold. Monthly, about three months behind. Not a tariff or wholesale price.">
+          {!data ? <Skeleton height={320} /> : (
             <div className="table-wrap">
               <table>
                 <thead><tr>
                   <Th k="name" sort={sort} onSort={toggle}>State</Th>
-                  <Th k="price" sort={sort} onSort={toggle} num>¢/kWh</Th>
-                  <Th k="yoy" sort={sort} onSort={toggle} num>Year over year</Th>
-                  <Th k="diff" sort={sort} onSort={toggle} num className="hide-sm">vs US</Th>
+                  <Th k="price" sort={sort} onSort={toggle} num>Price <U>¢/kWh</U></Th>
+                  <Th k="yoy" sort={sort} onSort={toggle} num>y/y</Th>
+                  <Th k="diff" sort={sort} onSort={toggle} num className="hide-sm">vs US <U>¢</U></Th>
                 </tr></thead>
                 <tbody>
                   {us && (
                     <tr className="pinned">
                       <td>United States</td>
-                      <td className="num">{bar(us[sector])}{num(us[sector], 2)}</td>
+                      <td className="num"><Meter value={us[sector]} max={max} />{num(us[sector], 2)}</td>
                       <td className="num">{signed(us[`${sector}_yoy`], 1, '%')}</td>
                       <td className="num hide-sm subtle">—</td>
                     </tr>
                   )}
                   {sorted.map(r => (
                     <tr key={r.state}>
-                      <td>{r.name} <span className="subtle">{r.state}</span></td>
-                      <td className="num">{bar(r.price)}{num(r.price, 2)}</td>
-                      <td className={`num ${r.yoy > 0 ? '' : 'muted'}`}>{signed(r.yoy, 1, '%')}</td>
-                      <td className="num hide-sm">{signed(r.diff, 2, '¢')}</td>
+                      <td>{r.name} <span className="subtle mono">{r.state}</span></td>
+                      <td className="num"><Meter value={r.price} max={max} />{num(r.price, 2)}</td>
+                      <td className="num">{signed(r.yoy, 1, '%')}</td>
+                      <td className="num hide-sm muted">{signed(r.diff, 2)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {!sorted.length && <Empty>No state matches “{q}”.</Empty>}
+              {!sorted.length && <Empty>no match</Empty>}
             </div>
           )}
-        </Panel>
+        </Tile>
         <UsTrend history={data?.us_history} sector={sector} />
-      </div>
-    </div>
+      </Board>
+    </>
   )
 }

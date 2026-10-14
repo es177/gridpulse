@@ -57,24 +57,21 @@ export default function ReactorMap({ units, selected, onSelect, onOpen }) {
       </svg>
       <div className="map-foot">
         <div className="legend">
-          {['full', 'reduced', 'offline', 'unknown'].filter(s => counts[s]).map(s => (
-            <span key={s}><span className={`dot ${s === 'full' ? 'ok' : s === 'reduced' ? 'stale' : s === 'offline' ? 'down' : ''}`} />{STATUS_LABEL[s]} <b>{counts[s]}</b></span>
+          {['full', 'reduced', 'offline', 'unknown'].filter(st => counts[st]).map(st => (
+            <span key={st}><span className={`dot ${st === 'full' ? 'ok' : st === 'reduced' ? 'warn' : st === 'offline' ? 'bad' : ''}`} />{STATUS_LABEL[st]} <b>{counts[st]}</b></span>
           ))}
-          {unplaced > 0 && <span className="subtle">{unplaced} without coordinates</span>}
-          <span className="subtle">Circle size ∝ nameplate MWe · click a unit</span>
+          {unplaced > 0 && <span>{unplaced} unmapped</span>}
+          <span>size = MWe</span>
         </div>
+        <span className="grow" />
         {pick && (
-          <div className="map-card">
-            <div>
-              <b>{pick.name}</b> <span className="muted">{pick.state}</span>
-              <div className="item-meta">
-                <span className="mono">{pick.today ?? '—'}%</span>
-                <span className={`mono ${pick.change < 0 ? 'down' : pick.change > 0 ? 'up' : 'subtle'}`}>{signed(pick.change, 0)} pt</span>
-                <span>{num(pick.mwe, 0)} MWe</span>
-                <span>{pick.operator || '—'}</span>
-              </div>
-            </div>
-            <button className="btn" type="button" onClick={() => onOpen(pick.name)}>Open in table</button>
+          <div className="legend">
+            <b>{pick.name}</b>
+            <span>{pick.state}</span>
+            <span>{pick.today ?? '—'}%</span>
+            <span className={pick.change < 0 ? 'bad' : pick.change > 0 ? 'ok' : ''}>{signed(pick.change, 0)} pt</span>
+            <span>{num(pick.mwe, 0)} MWe</span>
+            <button className="btn" type="button" onClick={() => onOpen(pick.name)}>table →</button>
           </div>
         )}
       </div>

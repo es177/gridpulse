@@ -4,6 +4,9 @@ import { displayMix, RENEWABLE } from './fuels.js'
 const HOUR = 3_600_000
 const isNum = v => typeof v === 'number' && Number.isFinite(v)
 
+/** Short region name: EIA's own code for the Lower 48, the operator name otherwise. */
+export const regionLabel = r => (r?.id === 'US48' ? 'US48' : r?.name)
+
 /** Latest demand, forecast error, 24h range and sparkline per EIA region. */
 export function regionRows(regions = []) {
   return regions.map(r => {

@@ -1,37 +1,47 @@
 import { useNow } from '../lib/hooks'
-import { ago, fullDate, num, observed } from '../lib/format'
+import { age, fullDate, num, observed, time } from '../lib/format'
 import { sourceState, STATE_LABEL } from '../lib/status'
 import { FUELS, FUEL_LABEL, displayMix, fuelVar } from '../lib/fuels'
 
-export function Panel({ title, meta, foot, flush, children, id }) {
+/** A grid of tiles separated by hairlines. Spans are out of 12 columns. */
+export function Board({ children }) {
+  return <div className="board">{children}</div>
+}
+
+export function Tile({ label, tip, meta, span = 12, rows, flush, id, className = '', children }) {
+  const cls = ['tile', span !== 12 && `s${span}`, rows && `r${rows}`, className].filter(Boolean).join(' ')
   return (
-    <section className="panel" id={id}>
-      <header className="panel-head">
-        <h2>{title}</h2>
-        {meta && <div className="meta">{meta}</div>}
-      </header>
-      <div className={flush ? 'panel-body flush' : 'panel-body'}>{children}</div>
-      {foot && <div className="panel-foot">{foot}</div>}
+    <section className={cls} id={id}>
+      {label && (
+        <header className="tile-head">
+          <h2 className="tile-label" title={tip}>{label}</h2>
+          {meta && <div className="tile-meta">{meta}</div>}
+        </header>
+      )}
+      <div className={flush ? 'tile-body flush' : 'tile-body'}>{children}</div>
     </section>
   )
 }
 
-export function Stat({ label, value, unit, sub, title }) {
+export function Metrics({ children }) {
+  return <section className="tile"><div className="metrics">{children}</div></section>
+}
+
+/** value: null while loading (skeleton), '—' when missing. */
+export function Metric({ label, value, unit, note, tip, tone }) {
   return (
-    <div className="stat" title={title}>
-      <div className="stat-label">{label}</div>
-      <div className="stat-value num">{value ?? <span className="skeleton" style={{ display: 'inline-block', width: 72, height: 22 }} />}{unit && value != null && <small>{unit}</small>}</div>
-      <div className="stat-sub">{sub || ' '}</div>
+    <div className="metric">
+      <div className="metric-label" title={tip}>{label}</div>
+      <div className={tone ? `metric-value ${tone}` : 'metric-value'}>
+        {value ?? <span className="skeleton" style={{ display: 'inline-block', width: 72, height: 20 }} />}
+        {unit && value != null && value !== '—' && <small>{unit}</small>}
+      </div>
+      <div className="metric-note">{note || ' '}</div>
     </div>
   )
 }
 
-export function Ago({ iso }) {
-  const now = useNow()
-  return iso ? <time dateTime={iso} title={fullDate(iso)}>{ago(iso, now)}</time> : <span>—</span>
-}
-
-/** Status dot + short label + observation age. Hover for the full record. */
+/** Status dot, source name and age of its newest observation. Hover for the full record. */
 export function SourceTag({ meta, name, showLabel = true }) {
   const now = useNow()
   const state = sourceState(meta, now)
@@ -41,41 +51,48 @@ export function SourceTag({ meta, name, showLabel = true }) {
     `${STATE_LABEL[state]} · ${meta.cadence}`,
     meta.observed_at && `Observed ${meta.resolution === 'time' || !meta.resolution ? fullDate(meta.observed_at) : observed(meta)}`,
     meta.fetched_at && `Retrieved ${fullDate(meta.fetched_at)}`,
-    meta.error && `Last attempt failed: ${meta.error}`,
-  ].filter(Boolean).join('\n') : 'Waiting for data'
+    meta.error && `Last attempt: ${meta.error}`,
+  ].filter(Boolean).join('\n') : 'Waiting'
+  const when = meta?.observed_at && (meta.resolution === 'day' || meta.resolution === 'month') ? observed(meta) : age(stamp, now)
   return (
-    <span className="source" title={detail}>
+    <span className="src" title={detail}>
       <span className={`dot ${state}`} aria-label={STATE_LABEL[state]} />
       {showLabel && (meta?.url ? <a href={meta.url} target="_blank" rel="noreferrer">{name || meta.label}</a> : <span>{name || meta?.label}</span>)}
-      {showLabel && stamp && <span className="mono">{meta.observed_at && (meta.resolution === 'day' || meta.resolution === 'month') ? observed(meta) : ago(stamp, now)}</span>}
+      {showLabel && stamp && <span>{when}</span>}
     </span>
   )
 }
 
-export function Label({ tone = '', children, title }) {
-  return <span className={`label ${tone}`} title={title}>{children}</span>
+export function Tag({ tone = '', children }) {
+  return <span className={tone ? `tag ${tone}` : 'tag'}>{children}</span>
 }
 
 export function Empty({ children }) {
   return <div className="empty">{children}</div>
 }
 
-export function Notice({ children }) {
-  return <div className="notice" role="status"><span className="dot stale" style={{ marginTop: 6 }} /><div>{children}</div></div>
+export function Banner({ children }) {
+  return <div className="banner" role="status"><span className="dot warn" />{children}</div>
 }
 
-/** Fetch error banner shown only when we have nothing or the last refresh failed. */
+/** One line when a request failed: what, why, and what is on screen instead. */
 export function LoadState({ res, what }) {
-  if (res.error && res.data) return <Notice>Could not refresh {what} ({res.error}). Showing the last data received.</Notice>
-  if (res.error) return <Notice>Could not load {what} ({res.error}). Retrying automatically.</Notice>
-  return null
+  if (!res.error) return null
+  const kept = res.data && res.at ? ` · showing ${time(new Date(res.at).toISOString())}` : ' · retrying'
+  return <Banner>{what}: {res.error}{kept}</Banner>
+}
+
+export function Skeleton({ height = 200 }) {
+  return <div className="skeleton" style={{ height, margin: 12 }} />
 }
 
 export function Seg({ options, value, onChange, label }) {
   return (
     <div className="seg" role="group" aria-label={label}>
-      {options.map(([key, text]) => (
-        <button key={key} type="button" aria-pressed={value === key} onClick={() => onChange(key)}>{text}</button>
+      {options.map(([key, text, count]) => (
+        <button key={key} type="button" aria-pressed={value === key} onClick={() => onChange(key)}>
+          {text}{count != null && <span className="n">{count}</span>}
+        </button>
       ))}
     </div>
   )
@@ -86,14 +103,23 @@ export function Th({ k, sort, onSort, children, num: numeric, className = '' }) 
   return (
     <th className={`${numeric ? 'num' : ''} ${className}`} aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
       <button type="button" onClick={() => onSort(k)}>
-        {children}<span className="arrow">{active ? (sort.dir === 'asc' ? '▲' : '▼') : ''}</span>
+        {children}{active && <span aria-hidden="true">{sort.dir === 'asc' ? '↑' : '↓'}</span>}
       </button>
     </th>
   )
 }
 
+/** Unit suffix inside an uppercase column head, kept in its own case. */
+export const U = ({ children }) => <span className="u">{children}</span>
+
+/** Proportion bar for table cells; tone is a status class. */
+export function Meter({ value, max = 100, tone = '' }) {
+  if (typeof value !== 'number') return <span className="meter" />
+  return <span className="meter"><span className={tone} style={{ width: `${Math.min(Math.max(value / max, 0), 1) * 100}%` }} /></span>
+}
+
 /** Tiny line chart. Gaps (null) break the line instead of interpolating. */
-export function Spark({ values = [], width = 96, height = 22, min, max, accent }) {
+export function Spark({ values = [], width = 96, height = 20, min, max }) {
   const known = values.filter(v => typeof v === 'number')
   if (known.length < 2) return <svg className="spark" width={width} height={height} aria-hidden="true" />
   const lo = min ?? Math.min(...known), hi = max ?? Math.max(...known)
@@ -108,15 +134,15 @@ export function Spark({ values = [], width = 96, height = 22, min, max, accent }
     last = [x(i), y(v)]
   })
   return (
-    <svg className={`spark${accent ? ' accent' : ''}`} width={width} height={height} aria-hidden="true">
+    <svg className="spark" width={width} height={height} aria-hidden="true">
       <path d={d} />
-      {last && <circle cx={last[0]} cy={last[1]} r="2" />}
+      {last && <circle cx={last[0]} cy={last[1]} r="1.75" />}
     </svg>
   )
 }
 
-/** Horizontal stacked bar of positive output by fuel, 2px gaps between segments. */
-export function MixBar({ mix, height = 10 }) {
+/** Horizontal stacked bar of positive output by fuel, 1px gaps between segments. */
+export function MixBar({ mix, height = 8 }) {
   const m = displayMix(mix)
   const parts = FUELS.map(f => [f, Math.max(m[f] || 0, 0)]).filter(([, v]) => v > 0)
   const total = parts.reduce((s, [, v]) => s + v, 0)
@@ -125,18 +151,29 @@ export function MixBar({ mix, height = 10 }) {
     <div className="mixbar" style={{ height }} role="img"
       aria-label={parts.map(([f, v]) => `${FUEL_LABEL[f]} ${num(v / total * 100)}%`).join(', ')}>
       {parts.map(([f, v]) => (
-        <span key={f} style={{ flex: v, background: fuelVar(f) }} title={`${FUEL_LABEL[f]}: ${num(v)} MW (${num(v / total * 100, 1)}%)`} />
+        <span key={f} style={{ flex: v, background: fuelVar(f) }} title={`${FUEL_LABEL[f]} ${num(v)} MW · ${num(v / total * 100, 1)}%`} />
       ))}
     </div>
   )
 }
 
-export function FuelLegend({ mix, unit = 'GW', scale = 1000, digits = 1 }) {
+export function FuelLegend({ mix, scale = 1000, digits = 1 }) {
   const m = displayMix(mix)
   return (
     <div className="legend">
       {FUELS.filter(f => m[f] !== undefined && Math.abs(m[f]) >= 0.5).map(f => (
-        <span key={f}><i style={{ background: fuelVar(f) }} />{FUEL_LABEL[f]} <b>{num(m[f] / scale, digits)}</b>{unit && <span className="subtle">{unit}</span>}</span>
+        <span key={f}><i style={{ background: fuelVar(f) }} />{FUEL_LABEL[f]} <b>{num(m[f] / scale, digits)}</b></span>
+      ))}
+    </div>
+  )
+}
+
+/** Legend for line charts: [label, color, dashed]. */
+export function LineLegend({ items }) {
+  return (
+    <div className="legend">
+      {items.map(([label, color, dashed]) => (
+        <span key={label}><i className={dashed ? 'dash' : 'line'} style={{ borderColor: color }} />{label}</span>
       ))}
     </div>
   )
@@ -144,17 +181,17 @@ export function FuelLegend({ mix, unit = 'GW', scale = 1000, digits = 1 }) {
 
 export const Icon = {
   pulse: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M2 12h4l2.5-6 4.5 12 3-8 1.5 2H22" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true">
+      <path d="M2 12h5l2.5-6 4.5 12 3-8 1.5 2H22" />
     </svg>
   ),
   sync: (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
       <path d="M13.5 6.5A5.5 5.5 0 0 0 3 5M2.5 9.5A5.5 5.5 0 0 0 13 11" /><path d="M3 2v3h3M13 14v-3h-3" />
     </svg>
   ),
   download: (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
       <path d="M8 2v8m0 0L5 7m3 3 3-3M3 13h10" />
     </svg>
   ),
