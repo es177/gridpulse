@@ -15,7 +15,7 @@ A live console for the US electricity grid and nuclear fleet, built only on free
 |---|---|---|---|
 | Overview | Demand, live operator load, reactor changes, latest news | All of the below | — |
 | Grid | Hourly demand, day-ahead forecast, net generation and net imports for Lower 48 and seven ISOs; US48 generation by fuel | EIA-930 | Hourly, ~1 h behind (fuel mix ~1 day behind) |
-| Live ISOs | Load and generation mix for CAISO, ERCOT, SPP, MISO, NYISO, ISO-NE; ERCOT hub price | Operator dashboards | 5 minutes |
+| Live | Load and generation mix for CAISO, ERCOT, SPP, MISO, NYISO, ISO-NE; ERCOT hub price | Operator dashboards | 5 minutes |
 | Reactors | Every operating US unit: power today, change, 365-day history, map | NRC daily power reactor status | Each business day |
 | Feed | News and notices, including NRC event reports | WNN, NRC, DOE NE, EIA, PJM, ISO-NE feeds | As published |
 | Prices | Retail price by state and sector with year-over-year change | EIA retail sales | Monthly, ~3 months behind |
@@ -24,9 +24,9 @@ A live console for the US electricity grid and nuclear fleet, built only on free
 
 Every number carries the time its source observed it. Filters live in the URL, so any view can be shared. Keyboard: `g` then a letter switches pages (`g o`, `g r`, …), `/` focuses search, `r` refreshes, `?` lists shortcuts.
 
-| Grid | Live ISOs | Reactors |
+| Grid | Live | Reactors |
 |---|---|---|
-| ![Grid page: Lower 48 demand and net generation](docs/screenshots/grid-dark.png) | ![Live ISOs: generation mix for six grid operators](docs/screenshots/live-dark.png) | ![Reactors: map of every operating US unit](docs/screenshots/reactors-dark.png) |
+| ![Grid page: Lower 48 demand and net generation](docs/screenshots/grid-dark.png) | ![Live: generation mix for six grid operators](docs/screenshots/live-dark.png) | ![Reactors: map of every operating US unit](docs/screenshots/reactors-dark.png) |
 
 ## How it stays up
 
