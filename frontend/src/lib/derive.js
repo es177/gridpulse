@@ -42,14 +42,12 @@ export function mixSummary(mix) {
   return { total, share, top, renewable: RENEWABLE.reduce((s, k) => s + (share[k] || 0), 0) }
 }
 
-/** ISOs whose latest observation is recent enough to call live. */
-export function liveIsos(isos = [], now = Date.now(), maxAgeMin = 30) {
-  return isos.filter(i => i.observed_at && now - Date.parse(i.observed_at) < maxAgeMin * 60_000)
-}
+/** An operator counts as live while its newest five-minute reading is under 30 minutes old. */
+export const isLive = (iso, now = Date.now()) => !!iso.observed_at && now - Date.parse(iso.observed_at) < 30 * 60_000
 
 /** Combined load and mix across live ISOs. */
-export function liveTotals(isos, now) {
-  const live = liveIsos(isos, now)
+export function liveTotals(isos = [], now = Date.now()) {
+  const live = isos.filter(i => isLive(i, now))
   const load = live.reduce((s, i) => s + (isNum(i.load_mw) ? i.load_mw : 0), 0)
   const mix = {}
   for (const i of live) for (const [k, v] of Object.entries(i.mix || {})) mix[k] = (mix[k] || 0) + v

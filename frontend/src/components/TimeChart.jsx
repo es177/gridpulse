@@ -6,6 +6,13 @@ import { tick, when } from '../lib/format'
 
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 const resolve = color => (color?.startsWith('var(') ? css(color.slice(4, -1)) : color)
+// Tooltip nodes are built, never parsed from HTML strings.
+const make = (tag, className = '', content = '') => {
+  const node = document.createElement(tag)
+  if (className) node.className = className
+  if (content) node.textContent = content
+  return node
+}
 const alpha = (hex, a) => {
   const m = /^#([0-9a-f]{6})$/i.exec(hex)
   if (!m) return hex
@@ -88,8 +95,13 @@ export default function TimeChart({ x, series, height = 220, stacked = false, ar
           if (idx == null || u.cursor.left < 0) { tip.style.display = 'none'; return }
           const rows = series.map(s => [s, s.values[idx]]).filter(([, v]) => typeof v === 'number')
           if (!rows.length) { tip.style.display = 'none'; return }
-          tip.innerHTML = `<div class="tip-time">${when(new Date(x[idx]).toISOString())}</div>` + rows.reverse().map(([s, v]) =>
-            `<div class="tip-row"><i style="background:${colorOf(s)}"></i>${s.label}<b>${format(v)}</b></div>`).join('')
+          tip.replaceChildren(make('div', 'tip-time', when(new Date(x[idx]).toISOString())), ...rows.reverse().map(([s, v]) => {
+            const swatch = make('i')
+            swatch.style.background = colorOf(s)
+            const row = make('div', 'tip-row')
+            row.append(swatch, s.label, make('b', '', format(v)))
+            return row
+          }))
           tip.style.display = 'block'
           const left = u.cursor.left + u.over.offsetLeft
           const flip = left + tip.offsetWidth + 16 > el.clientWidth

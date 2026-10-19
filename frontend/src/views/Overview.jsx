@@ -6,14 +6,15 @@ import { regionLabel, regionRows, liveTotals, mixSummary, reactorChanges } from 
 import { FUEL_LABEL } from '../lib/fuels'
 import { navigate } from '../lib/router'
 import TimeChart from '../components/TimeChart'
-import { Board, Tile, Metrics, Metric, SourceTag, Spark, MixBar, Empty, Skeleton, LoadState, U } from '../components/ui'
+import { Board, Tile, Metrics, Metric, SourceTag, Spark, Ext, Empty, Skeleton, LoadState, U } from '../components/ui'
+import IsoTable from '../components/IsoTable'
 
 const gwFormat = v => `${num(v / 1000, 0)} GW`
 const gwTip = v => `${num(v / 1000, 1)} GW`
 
 function Summary({ us, grid, live, fuel, reactors }) {
   const now = useNow()
-  const isos = live.data?.isos || []
+  const isos = live?.isos || []
   const totals = liveTotals(isos, now)
   const latestFuel = fuel?.series?.at(-1)
   const nuclear = latestFuel ? mixSummary(latestFuel.mix)?.share.nuclear : null
@@ -23,10 +24,10 @@ function Summary({ us, grid, live, fuel, reactors }) {
       <Metric label="US demand" value={us ? gw(us.d) : grid ? '—' : null} unit="GW"
         note={us && `${time(us.t)} · peak ${gw(us.peak, 0)}`}
         hint="Electricity in use across the lower 48 states, hourly. 1 GW is roughly one large power plant." />
-      <Metric label="Live load" value={totals.load != null ? gw(totals.load) : live.data ? '—' : null} unit="GW"
+      <Metric label="Live load" value={totals.load != null ? gw(totals.load) : live ? '—' : null} unit="GW"
         note={`${totals.count}/${isos.length || 6} grid operators`}
         hint="Demand reported every 5 minutes by six grid operators that cover about half the country." />
-      <Metric label="Renewables" value={totals.summary ? num(totals.summary.renewable, 1) : live.data ? '—' : null} unit="%"
+      <Metric label="Renewables" value={totals.summary ? num(totals.summary.renewable, 1) : live ? '—' : null} unit="%"
         note="hydro · wind · solar"
         hint="Share of those operators' electricity coming from hydro, wind and solar right now." />
       <Metric label="Reactors at full power" value={fleet?.units ? `${fleet.full}/${fleet.units}` : reactors ? '—' : null}
@@ -122,7 +123,7 @@ function Latest({ res }) {
         <ul className="rows news">
           {items.slice(0, 9).map(i => (
             <li key={i.id}>
-              <a className="title" href={i.url} target="_blank" rel="noreferrer">{i.title}</a>
+              <Ext className="title" href={i.url}>{i.title}</Ext>
               <div className="meta"><span>{i.source}</span><span>{age(i.published, now)}</span></div>
             </li>
           ))}
@@ -133,34 +134,10 @@ function Latest({ res }) {
 }
 
 function LiveIsos({ isos, sources }) {
-  const now = useNow()
   return (
     <Tile span={8} flush label="Grid operators · live" meta={<a href="#/live">live →</a>}
       hint="Each operator runs the grid for its region. The bar shows where its electricity comes from right now.">
-      <div className="table-wrap">
-        <table>
-          <thead><tr>
-            <th>ISO</th><th className="num">Load <U>GW</U></th><th style={{ width: '34%' }}>Mix</th>
-            <th className="num hide-sm">Renew.</th><th className="hide-sm">Largest</th><th className="num">Time</th>
-          </tr></thead>
-          <tbody>
-            {isos.map(i => {
-              const s = mixSummary(i.mix)
-              const fresh = i.observed_at && now - Date.parse(i.observed_at) < 30 * 60_000
-              return (
-                <tr key={i.key} className="clickable" onClick={() => navigate(`/live?iso=${i.key}`)}>
-                  <td><span className="src" style={{ color: 'var(--fg)', fontSize: 13, fontFamily: 'var(--sans)' }}><SourceTag meta={sources[`iso_${i.key}`]} showLabel={false} />{i.iso}</span></td>
-                  <td className="num">{gw(i.load_mw)}</td>
-                  <td>{i.mix ? <MixBar mix={i.mix} /> : <span className="subtle mono">—</span>}</td>
-                  <td className="num hide-sm">{pct(s?.renewable)}</td>
-                  <td className="hide-sm muted">{s ? FUEL_LABEL[s.top] : '—'}</td>
-                  <td className={`num ${fresh ? 'subtle' : 'warn'}`}>{time(i.observed_at)}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
+      <IsoTable isos={isos} sources={sources} onSelect={key => navigate(`/live?iso=${key}`)} />
     </Tile>
   )
 }
@@ -181,7 +158,7 @@ export default function Overview() {
       <LoadState res={grid} what="grid" />
       <LoadState res={live} what="live" />
       <Board>
-        <Summary us={us} grid={grid.data} live={live} fuel={grid.data && grid.data.fuel} reactors={reactors.data} />
+        <Summary us={us} grid={grid.data} live={live.data} fuel={grid.data && grid.data.fuel} reactors={reactors.data} />
         <DemandChart region={regions?.find(r => r.id === 'US48')} meta={grid.data?.sources?.eia_grid} loaded={!!grid.data} />
         <ReactorChanges res={reactors} />
         <Regions rows={rows} meta={grid.data?.sources?.eia_grid} />

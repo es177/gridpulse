@@ -11,4 +11,3 @@ export function sourceState(meta, now = Date.now()) {
 }
 
 export const STATE_LABEL = { ok: 'Current', degraded: 'Retrying', stale: 'Stale', down: 'Down', pending: 'Waiting' }
-export const STATE_TONE = { ok: 'ok', degraded: 'warn', stale: 'warn', down: 'bad', pending: '' }

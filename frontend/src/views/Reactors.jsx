@@ -5,7 +5,7 @@ import { useRoute, setParam } from '../lib/router'
 import { date, gw, num, signed } from '../lib/format'
 import { filterUnits } from '../lib/derive'
 import TimeChart from '../components/TimeChart'
-import { Board, Tile, Metrics, Metric, SourceTag, Seg, Th, Spark, Meter, Empty, Skeleton, LoadState, U } from '../components/ui'
+import { Board, Tile, Metrics, Metric, SourceTag, Seg, Th, Spark, Meter, Ext, Empty, Skeleton, LoadState, U } from '../components/ui'
 
 const ReactorMap = lazy(() => import('./ReactorMap'))
 
@@ -30,7 +30,7 @@ function Detail({ unit, dates }) {
           <div><dt>Nameplate</dt><dd className="mono">{num(unit.mwe, 0)} MWe</dd></div>
           <div><dt>Type</dt><dd>{unit.type || '—'}</dd></div>
           <div><dt>Operator</dt><dd>{unit.operator || '—'}</dd></div>
-          <div><dt>NRC</dt><dd>{unit.url ? <a href={unit.url} target="_blank" rel="noreferrer">unit page ↗</a> : '—'}</dd></div>
+          <div><dt>NRC</dt><dd>{unit.url ? <Ext href={unit.url}>unit page ↗</Ext> : '—'}</dd></div>
         </dl>
       </td>
     </tr>

@@ -60,10 +60,17 @@ export function SourceTag({ meta, name, showLabel = true }) {
   return (
     <span className="src" title={detail}>
       <span className={`dot ${state}`} aria-label={STATE_LABEL[state]} />
-      {showLabel && (meta?.url ? <a href={meta.url} target="_blank" rel="noreferrer">{name || meta.label}</a> : <span>{name || meta?.label}</span>)}
+      {showLabel && <Ext href={meta?.url}>{name || meta?.label}</Ext>}
       {showLabel && stamp && <span>{when}</span>}
     </span>
   )
+}
+
+/** Link to an outside page; anything but an https URL renders as plain text. */
+export function Ext({ href, className, children }) {
+  return /^https:\/\//.test(href || '')
+    ? <a className={className} href={href} target="_blank" rel="noreferrer">{children}</a>
+    : <span className={className}>{children}</span>
 }
 
 export function Tag({ tone = '', children }) {

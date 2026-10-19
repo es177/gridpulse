@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useResource, EVERY } from '../lib/api'
 import { useRoute, setParam } from '../lib/router'
-import { useSort } from '../lib/hooks'
+import { useQueryText, useSort } from '../lib/hooks'
 import { num, signed, month } from '../lib/format'
 import TimeChart from '../components/TimeChart'
 import { Board, Tile, Metrics, Metric, SourceTag, Seg, Th, Meter, Empty, Skeleton, LoadState, U } from '../components/ui'
@@ -33,8 +33,7 @@ export default function Prices() {
   const res = useResource('/api/prices', EVERY.prices)
   const { params } = useRoute()
   const sector = SECTOR_LABEL[params.get('sector')] ? params.get('sector') : 'res'
-  const [q, setQ] = useState(params.get('q') || '')
-  useEffect(() => { setParam('q', q) }, [q])
+  const [q, setQ, dq] = useQueryText(params)
 
   const data = res.data?.prices
   const us = data?.us
@@ -42,7 +41,7 @@ export default function Prices() {
     state: r.state, name: r.name, price: r[sector], yoy: r[`${sector}_yoy`],
     diff: typeof r[sector] === 'number' && typeof us?.[sector] === 'number' ? r[sector] - us[sector] : null,
   })), [data, sector, us])
-  const terms = q.trim().toLowerCase()
+  const terms = dq.trim().toLowerCase()
   const visible = rows.filter(r => !terms || r.name.toLowerCase().includes(terms) || r.state.toLowerCase() === terms)
   const { sorted, sort, toggle } = useSort(visible, 'price', 'desc')
   const max = Math.max(0, ...visible.map(r => r.price ?? 0), us?.[sector] ?? 0) || 1

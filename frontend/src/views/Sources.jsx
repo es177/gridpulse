@@ -3,7 +3,7 @@ import { useResource, useSources, EVERY } from '../lib/api'
 import { useNow } from '../lib/hooks'
 import { age, observed } from '../lib/format'
 import { sourceState, STATE_LABEL } from '../lib/status'
-import { Board, Tile, Banner, Skeleton } from '../components/ui'
+import { Board, Tile, Banner, Ext, Skeleton } from '../components/ui'
 
 const GROUPS = [
   ['Grid', name => name.startsWith('eia_')],
@@ -25,7 +25,7 @@ function SourceRow({ meta }) {
   return (
     <tr>
       <td><span className="src"><span className={`dot ${state}`} />{STATE_LABEL[state].toLowerCase()}</span></td>
-      <td>{meta.url ? <a href={meta.url} target="_blank" rel="noreferrer">{meta.label} ↗</a> : meta.label}</td>
+      <td><Ext href={meta.url}>{meta.label}{meta.url ? ' ↗' : ''}</Ext></td>
       <td className="muted hide-sm">{meta.cadence}</td>
       <td className="mono">{meta.observed_at ? observed(meta) : <span className="subtle">—</span>}</td>
       <td className="num muted">{meta.observed_at ? age(meta.observed_at, now) : '—'}</td>

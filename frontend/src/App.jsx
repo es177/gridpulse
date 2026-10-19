@@ -1,10 +1,10 @@
-import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Component, Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useRoute, navigate } from './lib/router'
 import { EVERY, reloadAll, useActivity, useResource, useSources } from './lib/api'
 import { useNow } from './lib/hooks'
 import { sourceState } from './lib/status'
 import { age, zone } from './lib/format'
-import { Icon } from './components/ui'
+import { Banner, Icon } from './components/ui'
 import { applyExplain, initialExplain } from './lib/explain'
 import Overview from './views/Overview'
 import Grid from './views/Grid'
@@ -53,6 +53,17 @@ function Refresh() {
       {failed > 0 && !loading && <span className="dot stale" />}
     </button>
   )
+}
+
+/** A page that throws shows one line instead of blanking the app; other pages keep working. */
+class Boundary extends Component {
+  state = { error: null }
+  static getDerivedStateFromError(error) { return { error } }
+  componentDidCatch(error) { console.error(error) }
+  render() {
+    if (!this.state.error) return this.props.children
+    return <Banner>this page hit an error · <button className="btn bare" type="button" onClick={() => location.reload()}>reload</button></Banner>
+  }
 }
 
 function Help({ onClose }) {
@@ -134,7 +145,7 @@ export default function App() {
           </div>
         </div>
       </header>
-      <main><View /></main>
+      <main><Boundary key={route.path}><View /></Boundary></main>
       <footer>
         <a href="#/sources">EIA · NRC · CAISO · ERCOT · SPP · MISO · NYISO · ISO-NE · WNA</a>
         <span>{zone()}</span>

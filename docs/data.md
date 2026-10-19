@@ -24,7 +24,7 @@ What each number means and where it can mislead. The UI keeps these to one line 
 | NYISO | Sum of 11 zone loads | Today | No | — |
 | ISO-NE | Metered system load, excludes behind-the-meter solar | Today | Yes | — |
 
-- Series are downsampled to 15-minute points over the operator's local operating day.
+- Operators report every 5 minutes; the latest reading is shown as is, and charts downsample the day to 15-minute points over the operator's local operating day.
 - MISO's operating day follows Eastern Standard Time all year.
 - Mix totals can differ from load because of imports, losses and what each operator includes.
 - For NYISO and ISO-NE the generation mix can be one 5-minute interval older than the load shown.
@@ -41,7 +41,18 @@ What each number means and where it can mislead. The UI keeps these to one line 
 
 ## Feeds
 
-World Nuclear News, NRC News, NRC event reports, DOE Office of Nuclear Energy, EIA Today in Energy, PJM Inside Lines and ISO New England. Tags come from a keyword tagger and do not assert that a policy is enacted or a project built. A failing feed is listed and skipped without blocking the others. NRC News comes from NRC's yearly release listing, which has dates only, so releases are stamped at midnight Eastern.
+Publishers, each linked straight to its own site:
+
+- Regulators and agencies: NRC News, NRC event reports (reactor events, scrams and emergencies only), DOE Office of Nuclear Energy, DOE Newsroom, NERC News, EIA Today in Energy and EIA Press Releases.
+- Grid operators: PJM Inside Lines, MISO News, MISO real-time notifications, CAISO emergency notices and ERCOT grid conditions.
+- Trade press: World Nuclear News, milestones only (grid connection, criticality, construction, licensing, restarts, closures, major orders and funding).
+
+A story is listed only if its headline matches one of six topics (nuclear, reliability, demand, markets, generation, storage), counting the topic some publishers imply (nuclear for NRC, DOE nuclear and World Nuclear News; reliability for NERC and operator notices), and is at most 45 days old. Housekeeping, events, promotions, awards, staff news and opinion are dropped for every publisher, plus a short per-publisher list. MISO notifications keep only Maximum Generation, Energy Emergency and Capacity Advisory declarations, and CAISO drops routine maintenance restrictions and system tests. Tags come from a keyword tagger and do not assert that a policy is enacted or a project built.
+
+- No CAISO or ERCOT items is the normal state: they appear only during emergencies. ERCOT's dashboard shows only the current condition, so an alert (conservation notice or appeal, or Energy Emergency Alert) becomes one item per state and Central day, stamped with the dashboard's last update, and stays listed after conditions return to normal.
+- MISO labels notification times as UTC, but they are Eastern Standard Time all year and are converted as such. CAISO's notice times carry no zone and are read as Pacific time.
+- NRC News comes from NRC's yearly release listing, which has dates only, so releases are stamped at midnight Eastern.
+- Publishers are fetched in parallel, each with its own timeout of 12 s or less. A publisher that fails is named in the feed and its earlier items are kept.
 
 ## Prices
 
@@ -53,4 +64,4 @@ World Nuclear Association table. Operable includes units not currently generatin
 
 ## Reference figures
 
-The Grid page shows three dated figures copied from reports (Berkeley Lab data-center scenarios, PJM 2028/29 capacity auction) in `frontend/src/data/reference.json`. They are labeled "Not live" and change only when a new report is published and the file is edited.
+The Grid page shows three dated figures copied from reports (Berkeley Lab data-center scenarios, PJM 2028/29 capacity auction) in `frontend/src/data/reference.json`. They are labeled "static" and change only when a new report is published and the file is edited.

@@ -14,10 +14,7 @@ import functools
 import io
 from datetime import date, datetime, time, timedelta, timezone
 
-try:
-    from zoneinfo import ZoneInfo
-except ImportError:  # pragma: no cover - Python < 3.9
-    from backports.zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo
 
 try:
     from .common import add_mix, number, utc_iso

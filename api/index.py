@@ -6,6 +6,7 @@ response while it revalidates, or if the function errors.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -29,8 +30,9 @@ def load_env(path: Path = Path(__file__).resolve().parent.parent / '.env') -> No
 
 load_env()
 
-from fastapi import FastAPI, Query  # noqa: E402
-from fastapi.responses import JSONResponse  # noqa: E402
+from fastapi import FastAPI, Request  # noqa: E402
+from fastapi.responses import JSONResponse, RedirectResponse  # noqa: E402
+from starlette.background import BackgroundTask  # noqa: E402
 
 from sources import ISO_KEYS, SOURCES  # noqa: E402
 from sources.iso import META as ISO_META  # noqa: E402
@@ -40,14 +42,38 @@ from store import Store  # noqa: E402
 REACTORS = json.loads((Path(__file__).parent / 'data' / 'reactors.json').read_text())
 VERSION = (os.getenv('VERCEL_GIT_COMMIT_SHA') or 'dev')[:7]
 
+SETTLE = 30.0     # seconds a response keeps its instance working on refreshes it started
+UNSETTLED = 15    # CDN seconds for a response built while a refresh is pending or failing
+
 store = Store(SOURCES)
 log = logging.getLogger('gridpulse')
+logging.getLogger('httpx').setLevel(logging.WARNING)  # request URLs can carry the EIA key
 app = FastAPI(title='GridPulse', docs_url=None, redoc_url=None, openapi_url=None)
+
+
+@app.middleware('http')
+async def bare_paths(request: Request, call_next):
+    """No route takes parameters. Redirecting query strings stops cache-busting URLs from
+    reaching the origin and, through it, the upstream sources."""
+    if request.url.query:
+        return RedirectResponse(request.url.path, status_code=308,
+                                headers={'Vercel-CDN-Cache-Control': 'max-age=86400'})
+    return await call_next(request)
+
+
+async def settle(tasks: list) -> None:
+    """Runs after the response is sent: serverless instances may freeze once a request ends,
+    so refreshes this request started are given time to finish."""
+    await asyncio.wait(tasks, timeout=SETTLE)
 
 
 def respond(payload: dict, names, cdn_seconds: int, stale_seconds: int) -> JSONResponse:
     payload['sources'] = {name: store.meta(name) for name in names}
-    return JSONResponse(payload, headers={
+    pending = store.pending(names)
+    payload['refreshing'] = bool(pending)  # the client asks again shortly instead of at its usual cadence
+    if pending or any(payload['sources'][name]['error'] for name in names):
+        cdn_seconds = min(cdn_seconds, UNSETTLED)
+    return JSONResponse(payload, background=BackgroundTask(settle, pending) if pending else None, headers={
         'Cache-Control': 'no-cache',
         'Vercel-CDN-Cache-Control':
             f'max-age={cdn_seconds}, stale-while-revalidate={stale_seconds}, stale-if-error=604800',
@@ -88,7 +114,7 @@ def fleet_summary(units: list) -> dict:
 
 
 @app.get('/api/reactors')
-async def reactors(days: int = Query(365, ge=7, le=400)):
+async def reactors():
     names = ['nrc_status', 'nrc_directory']
     entries = await store.get_many(names)
     status = entries['nrc_status'].data
@@ -99,8 +125,8 @@ async def reactors(days: int = Query(365, ge=7, le=400)):
         units = []
     payload = {
         'report_date': status.get('report_date') if status else None,
-        'dates': status['dates'][-days:] if status else [],
-        'units': [{**u, 'power': u['power'][-days:]} for u in units],
+        'dates': status['dates'] if status else [],
+        'units': units,
         'fleet': fleet_summary(units),
     }
     return respond(payload, names, 900, 86400)

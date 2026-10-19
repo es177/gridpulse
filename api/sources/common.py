@@ -8,8 +8,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Awaitable, Callable, Optional
 
-# NRC's bot filter rejects browser-like user agents that lack browser headers.
-# A plain, honest client identifier is accepted by every source we use.
+# An honest client identifier. Browser-like agents are avoided; NRC additionally needs the
+# HTTP library's own token and gets it from nrc.NRC_HEADERS.
 HEADERS = {'User-Agent': 'GridPulse/2.0 (public energy data dashboard)', 'Accept': '*/*'}
 
 # Canonical fuel keys used across EIA and ISO feeds. Storage is positive when

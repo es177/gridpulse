@@ -4,6 +4,7 @@
 import { useEffect, useSyncExternalStore } from 'react'
 
 const TIMEOUT = 25_000
+const QUICK = 6_000     // re-ask delay after a response that was still refreshing
 const entries = new Map()      // path -> { data, error, at, loading, interval }
 const listeners = new Set()
 const sources = {}             // merged per-source metadata from every response
@@ -14,7 +15,7 @@ const subscribe = fn => { listeners.add(fn); return () => listeners.delete(fn) }
 const getVersion = () => version
 
 function entry(path) {
-  if (!entries.has(path)) entries.set(path, { data: undefined, error: null, at: 0, loading: false, users: 0, interval: 0 })
+  if (!entries.has(path)) entries.set(path, { data: undefined, error: null, at: 0, loading: false, users: 0, interval: 0, quick: 0 })
   return entries.get(path)
 }
 
@@ -35,6 +36,9 @@ export async function load(path) {
       if (!known || (meta.fetched_at || '') >= (known.fetched_at || '')) sources[name] = meta
     }
     Object.assign(e, { data, error: null, at: Date.now() })
+    // A response built while the server was still refreshing: ask again soon, at most twice in a row.
+    e.quick = data.refreshing ? e.quick + 1 : 0
+    if (data.refreshing && e.quick <= 2) setTimeout(() => load(path), QUICK)
   } catch (err) {
     e.error = err.name === 'AbortError' ? 'Request timed out' : (err.message || 'Network error')
     e.at = e.at || 0
@@ -66,7 +70,7 @@ export function useResource(path, interval) {
     }
   }, [path, interval])
   const e = entry(path)
-  return { data: e.data, error: e.error, loading: e.loading, at: e.at, reload: () => load(path) }
+  return { data: e.data, error: e.error, loading: e.loading, at: e.at }
 }
 
 /** Reload every endpoint a mounted panel is using. */

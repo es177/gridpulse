@@ -17,7 +17,7 @@ A live console for the US electricity grid and nuclear fleet, built only on free
 | Grid | Hourly demand, day-ahead forecast, net generation and net imports for Lower 48 and seven ISOs; US48 generation by fuel | EIA-930 | Hourly, ~1 h behind (fuel mix ~1 day behind) |
 | Live | Load and generation mix for CAISO, ERCOT, SPP, MISO, NYISO, ISO-NE; ERCOT hub price | Operator dashboards | 5 minutes |
 | Reactors | Every operating US unit: power today, change, 365-day history, map | NRC daily power reactor status | Each business day |
-| Feed | News and notices, including NRC event reports | WNN, NRC, DOE NE, EIA, PJM, ISO-NE feeds | As published |
+| Feed | Significant events only: grid emergencies, reactor trips, regulatory decisions, reliability assessments, major milestones; tagged by topic | NRC, NERC, DOE, EIA, PJM, MISO, CAISO, ERCOT, World Nuclear News | As published |
 | Prices | Retail price by state and sector with year-over-year change | EIA retail sales | Monthly, ~3 months behind |
 | World | Nuclear fleet by country | World Nuclear Association | Monthly |
 | Sources | Status of every source, computed in the browser | — | — |
@@ -32,8 +32,9 @@ Every number carries the time its source observed it. New to grid data? Switch o
 
 - **Independent sources.** Each source in `api/sources/__init__.py` has its own refresh interval and staleness limit. A request waits only for the sources it needs, and at most 2.5 s when cached data exists.
 - **Last good data wins.** A failed or implausible refresh never replaces data. Parsers validate shape and coverage and raise instead of guessing; the page shows the source as Retrying or Stale.
-- **Fallbacks.** If EIA's API is rate-limited or down, the same series come from EIA's keyless Grid Monitor endpoints.
-- **Cold starts.** `api/data/snapshot.json` seeds a new instance. Refresh it with `python3 scripts/refresh_snapshot.py`.
+- **Fallbacks.** If EIA's API is slow, rate-limited or down, EIA's keyless Grid Monitor endpoints answer in parallel and the first valid answer wins.
+- **Refreshes finish.** A response that starts a refresh keeps its serverless instance working on it after replying, and is cached briefly until the fresh data lands.
+- **Cold starts.** `api/data/snapshot.json` seeds a new instance. A weekly GitHub Action refreshes it from every source and commits it, which also checks that every parser still works.
 - **CDN.** Responses carry `stale-while-revalidate` and `stale-if-error`, so visitors are served from the edge and an origin error keeps the last response online.
 - **Honest time.** Status is computed in the browser from source timestamps, so a cached response cannot show a frozen "current".
 
@@ -41,7 +42,7 @@ What each figure means, and where it can mislead, is in [docs/data.md](docs/data
 
 ## Run locally
 
-Requires Python 3.9+ and Node 18+.
+Requires Python 3.10+ (3.12 in production) and Node 18+.
 
 ```sh
 python3 -m pip install -r api/requirements.txt uvicorn
@@ -58,7 +59,7 @@ Set `EIA_API_KEY` ([free](https://www.eia.gov/opendata/register.php), see `.env.
 
 ## Deploy your own
 
-Import the repository into [Vercel](https://vercel.com/new). `vercel.json` builds the frontend and deploys `api/index.py` as a Python function; no other settings are needed. Add `EIA_API_KEY` as an environment variable.
+Import the repository into [Vercel](https://vercel.com/new). `vercel.json` builds the frontend, deploys `api/index.py` as a Python function and sets security headers; no other settings are needed. Add `EIA_API_KEY` as an environment variable, and optionally as a repository secret for the weekly snapshot workflow.
 
 ## Layout
 
@@ -79,7 +80,7 @@ npm test --prefix frontend
 npm run build --prefix frontend
 ```
 
-Tests run offline against recorded fixtures. CI runs all three on every push.
+Tests run offline against recorded fixtures. CI runs all three on every push to `main` and every pull request.
 
 ## Data
 

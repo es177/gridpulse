@@ -30,7 +30,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root {
     color-scheme: dark;
     --bg: #0a0a0a;
     --surface: #0a0a0a;
@@ -74,8 +74,6 @@ h1, h2, h3 { margin: 0; font: inherit; }
 .ok { color: var(--ok); }
 .warn { color: var(--warn); }
 .bad { color: var(--bad); }
-.nowrap { white-space: nowrap; }
-.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
 /* Small uppercase monospace: every label, column head and caption in the app. */
 .label, .tile-label, .metric-label, th, .day {
@@ -234,6 +232,7 @@ kbd { display: inline-block; min-width: 18px; padding: 0 4px; border: 1px solid 
 .dot.pending { background: none; box-shadow: inset 0 0 0 1px var(--fg-3); }
 .src { display: inline-flex; align-items: center; gap: 6px; font: 11px var(--mono); color: var(--fg-3); white-space: nowrap; }
 .src a:hover { color: var(--fg); }
+.src.iso { font: 13px var(--sans); color: var(--fg); }
 .banner {
   display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 6px 10px;
   border: 1px solid var(--line-strong); border-left: 2px solid var(--warn); border-radius: 4px;
@@ -258,7 +257,6 @@ kbd { display: inline-block; min-width: 18px; padding: 0 4px; border: 1px solid 
 .spark path { fill: none; stroke: var(--fg-2); stroke-width: 1.25; }
 .spark circle { fill: var(--fg); }
 .uplot { font-family: var(--mono); }
-.u-legend { display: none; }
 .u-cursor-pt { border-radius: 50%; }
 .tip {
   position: absolute; z-index: 5; min-width: 140px; padding: 6px 8px; pointer-events: none;

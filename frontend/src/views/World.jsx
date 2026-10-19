@@ -1,20 +1,19 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useResource, EVERY } from '../lib/api'
-import { useRoute, setParam } from '../lib/router'
-import { useSort } from '../lib/hooks'
+import { useRoute } from '../lib/router'
+import { useQueryText, useSort } from '../lib/hooks'
 import { gw, num, date } from '../lib/format'
 import { Board, Tile, Metrics, Metric, SourceTag, Th, Meter, Empty, Skeleton, LoadState, U } from '../components/ui'
 
 export default function World() {
   const res = useResource('/api/global', EVERY.world)
   const { params } = useRoute()
-  const [q, setQ] = useState(params.get('q') || '')
-  useEffect(() => { setParam('q', q) }, [q])
+  const [q, setQ, dq] = useQueryText(params)
 
   const data = res.data?.world
   const world = data?.world
   const countries = useMemo(() => data?.countries || [], [data])
-  const terms = q.trim().toLowerCase()
+  const terms = dq.trim().toLowerCase()
   const visible = countries.filter(c => !terms || c.name.toLowerCase().includes(terms))
   const { sorted, sort, toggle } = useSort(visible, 'operable_mwe', 'desc')
   const max = Math.max(1, ...countries.map(c => c.operable_mwe ?? 0))

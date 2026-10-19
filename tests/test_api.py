@@ -2,24 +2,29 @@
 import json
 import sys
 import unittest
+import warnings
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FIX = ROOT / 'tests' / 'fixtures'
 sys.path.insert(0, str(ROOT / 'api'))
 
+# Starlette 1.x nudges toward a successor HTTP client for its test client; tests only.
+warnings.filterwarnings('ignore', message='Using `httpx` with `starlette.testclient` is deprecated')
 from fastapi.testclient import TestClient  # noqa: E402
 
 import index  # noqa: E402
 from sources import eia, feeds, nrc, wna  # noqa: E402
 
+NOW = datetime(2026, 10, 13, 2, 0, tzinfo=timezone.utc)  # fixtures are from October 2026
 DATA = {
     'eia_grid': lambda: eia.parse_v2_grid(json.loads((FIX / 'eia/v2_region_data.json').read_text())),
     'eia_fuel': lambda: eia.parse_v2_fuel(json.loads((FIX / 'eia/v2_fuel_type.json').read_text())),
     'eia_prices': lambda: eia.parse_v2_prices(json.loads((FIX / 'eia/v2_retail_sales.json').read_text())),
     'nrc_status': lambda: nrc.parse_status((FIX / 'nrc/status.txt').read_text()),
     'nrc_directory': lambda: nrc.parse_directory((FIX / 'nrc/directory.html').read_text()),
-    'feeds': lambda: feeds.merge([feeds.parse_feed((FIX / 'feeds/wnn.xml').read_bytes(), 'World Nuclear News')]
+    'feeds': lambda: feeds.merge([feeds.parse_feed((FIX / 'feeds/wnn.xml').read_bytes(), 'World Nuclear News', NOW)]
                                  + [ValueError('offline')] * (len(feeds.FEEDS) - 1)),
     'wna': lambda: wna.parse_world((FIX / 'wna/wna.html').read_text()),
 }
@@ -47,11 +52,10 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(set(body['sources']), {'eia_grid', 'eia_fuel'})
 
     def test_reactors_join_every_unit_with_history(self):
-        body = self.get('/api/reactors?days=30')
+        body = self.get('/api/reactors')
         self.assertGreaterEqual(body['fleet']['units'], 90)
-        self.assertEqual(len(body['dates']), 30)
-        unit = body['units'][0]
-        self.assertEqual(len(unit['power']), 30)
+        self.assertGreater(len(body['dates']), 30)
+        self.assertTrue(all(len(u['power']) == len(body['dates']) for u in body['units']))
         self.assertTrue(all(u['docket'] for u in body['units']))
         fleet = body['fleet']
         self.assertEqual(fleet['full'] + fleet['reduced'] + fleet['offline'] + fleet['unknown'], fleet['units'])
@@ -72,6 +76,22 @@ class ApiTest(unittest.TestCase):
     def test_prices_and_world(self):
         self.assertGreaterEqual(len(self.get('/api/prices')['prices']['rows']), 48)
         self.assertGreaterEqual(len(self.get('/api/global')['world']['countries']), 25)
+
+    def test_query_strings_redirect_to_the_bare_path(self):
+        response = self.client.get('/api/grid?bust=1', follow_redirects=False)
+        self.assertEqual((response.status_code, response.headers['location']), (308, '/api/grid'))
+
+    def test_settled_responses_say_they_are_not_refreshing(self):
+        self.assertIs(self.get('/api/grid')['refreshing'], False)
+
+    def test_failing_source_shortens_cdn_caching(self):
+        entry = index.store.entries['eia_prices']
+        entry.error = 'HTTP 503'
+        try:
+            self.assertIn('max-age=15,', self.client.get('/api/prices').headers['vercel-cdn-cache-control'])
+        finally:
+            entry.error = None
+        self.assertIn('max-age=3600,', self.client.get('/api/prices').headers['vercel-cdn-cache-control'])
 
     def test_status_reports_every_source(self):
         body = self.get('/api/status')

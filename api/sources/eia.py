@@ -328,9 +328,6 @@ async def _api930(client, route: str, params: dict, hours: int):
     return response.json()
 
 
-FETCH_ERRORS = (httpx.HTTPError, ValueError, KeyError, TypeError)
-
-
 async def _with_fallback(label: str, primary, fallback):
     """v2's answer, unless it fails or is still running after HEDGE_AFTER seconds; then the
     fallback runs alongside it and the first valid answer wins."""
@@ -342,7 +339,7 @@ async def _with_fallback(label: str, primary, fallback):
         for finished in asyncio.as_completed(tasks):
             try:
                 return await finished
-            except FETCH_ERRORS:
+            except Exception:  # any failure of one path leaves the other to answer
                 continue
     finally:
         for task in tasks:

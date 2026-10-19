@@ -50,7 +50,6 @@ export function tick(seconds, step) {
 
 export const time = iso => (valid(iso) ? clock.format(new Date(iso)) : DASH)
 export const when = iso => (valid(iso) ? dayTime.format(new Date(iso)) : DASH)
-export const day = iso => (valid(iso) ? dayOnly.format(new Date(iso)) : DASH)
 export const fullDate = iso => (valid(iso) ? full.format(new Date(iso)) : DASH)
 // Calendar dates (YYYY-MM-DD) are not instants; format them without a timezone shift.
 export function date(ymd, withYear = false) {

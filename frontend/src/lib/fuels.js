@@ -21,16 +21,3 @@ export function displayMix(mix = {}) {
 }
 
 export const fuelVar = fuel => `var(--fuel-${fuel})`
-
-export function fuelColors() {
-  const style = getComputedStyle(document.documentElement)
-  return Object.fromEntries(FUELS.map(f => [f, style.getPropertyValue(`--fuel-${f}`).trim()]))
-}
-
-/** Share of positive output (storage charging and net exports excluded). */
-export function shares(mix) {
-  const m = displayMix(mix)
-  const total = Object.values(m).reduce((s, v) => s + Math.max(v, 0), 0)
-  if (!total) return { total: 0, share: {} }
-  return { total, share: Object.fromEntries(Object.entries(m).map(([k, v]) => [k, Math.max(v, 0) / total * 100])) }
-}

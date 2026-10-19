@@ -5,7 +5,7 @@ import { gw, num, signed, time, when } from '../lib/format'
 import { regionLabel, regionRows, toCSV, download } from '../lib/derive'
 import { FUELS, FUEL_LABEL, displayMix } from '../lib/fuels'
 import TimeChart from '../components/TimeChart'
-import { Board, Tile, Metrics, Metric, SourceTag, Seg, LoadState, FuelLegend, LineLegend, Empty, Icon } from '../components/ui'
+import { Board, Tile, Metrics, Metric, SourceTag, Seg, LoadState, FuelLegend, LineLegend, Ext, Empty, Icon } from '../components/ui'
 import reference from '../data/reference.json'
 
 const gwAxis = v => `${num(v / 1000, 0)} GW`
@@ -58,7 +58,7 @@ function ReferenceTile() {
               <tr key={r.label} title={r.detail}>
                 <td className="wrap" style={{ minWidth: 180, padding: '6px 12px' }}>{r.label}</td>
                 <td className="num strong">{r.value}</td>
-                <td className="hide-sm subtle mono"><a href={r.url} target="_blank" rel="noreferrer">{r.source} ↗</a></td>
+                <td className="hide-sm subtle mono"><Ext href={r.url}>{r.source} ↗</Ext></td>
               </tr>
             ))}
           </tbody>

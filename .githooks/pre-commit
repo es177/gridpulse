@@ -3,7 +3,7 @@
 for identity in GIT_AUTHOR_IDENT GIT_COMMITTER_IDENT; do
   email=$(git var "$identity" | sed -n 's/.*<\([^>]*\)>.*/\1/p')
   case "$email" in
-    anonymous@example.invalid|*@users.noreply.github.com) ;;
-    *) echo "Commit blocked: use an anonymous or noreply author/committer address." >&2; exit 1 ;;
+    anonymous@example.invalid) ;;
+    *) echo "Commit blocked: author and committer must be Anonymous <anonymous@example.invalid>." >&2; exit 1 ;;
   esac
 done

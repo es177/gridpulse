@@ -92,6 +92,12 @@ class Store:
                 pass  # serve last good; the refresh keeps running
         return entry
 
+    def pending(self, names) -> list:
+        """Unfinished refreshes of these sources running on this event loop."""
+        loop = asyncio.get_running_loop()
+        tasks = (self.entries[name].task for name in names)
+        return [t for t in tasks if t is not None and not t.done() and t.get_loop() is loop]
+
     async def get_many(self, names, wait: Optional[float] = None) -> dict:
         entries = await asyncio.gather(*(self.get(n, wait) for n in names))
         return dict(zip(names, entries))
