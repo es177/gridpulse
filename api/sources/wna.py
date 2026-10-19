@@ -69,7 +69,8 @@ def parse_world(markup: str) -> dict:
     except ValueError:
         updated_on = None
     return {
-        'observed_at': None,
+        # The table's own date, so an unrevised table goes stale instead of looking fresh on every fetch.
+        'observed_at': f'{updated_on}T00:00:00+00:00' if updated_on else None,
         'updated': updated_on,
         'generation_year': int(year[1]),
         'countries': countries,

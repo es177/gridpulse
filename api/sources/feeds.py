@@ -7,18 +7,23 @@ import re
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
+from urllib.parse import urljoin
 
 try:
     from .common import HEADERS, text, utc_iso
-    from .nrc import NRC_HEADERS
+    from .nrc import EASTERN, NRC_HEADERS
 except ImportError:
     from common import HEADERS, text, utc_iso
-    from nrc import NRC_HEADERS
+    from nrc import EASTERN, NRC_HEADERS
+
+# NRC's RSS news feed stopped gaining items in September 2026, when releases moved from PDFs to
+# web pages. The yearly release listing at {NRC_RELEASES}/{year} is the complete record.
+NRC_RELEASES = 'https://www.nrc.gov/about-nrc/news-releases'
 
 # (display name, url, timeout seconds, request headers)
 FEEDS = [
     ('World Nuclear News', 'https://www.world-nuclear-news.org/rss', 8, HEADERS),
-    ('NRC News', 'https://www.nrc.gov/public-involve/rss?feed=news', 8, NRC_HEADERS),
+    ('NRC News', NRC_RELEASES, 8, NRC_HEADERS),
     ('DOE Nuclear Energy', 'https://www.energy.gov/ne/rss.xml', 8, HEADERS),
     ('EIA Today in Energy', 'https://www.eia.gov/rss/todayinenergy.xml', 12, HEADERS),  # often ~9 s
     ('PJM Inside Lines', 'https://insidelines.pjm.com/feed/', 8, HEADERS),
@@ -99,10 +104,31 @@ def parse_feed(raw: bytes | str, source: str, now: datetime | None = None) -> li
         items.append((node.findtext(f'{ATOM}title'), link.get('href') if link is not None else None,
                       node.findtext(f'{ATOM}published') or node.findtext(f'{ATOM}updated'),
                       node.findtext(f'{ATOM}summary') or node.findtext(f'{ATOM}content')))
+    return _articles([(t, u, parse_date(p, now), d) for t, u, p, d in items], source, now)
+
+
+def parse_nrc_releases(markup: str, source: str = 'NRC News', now: datetime | None = None) -> list[dict]:
+    """NRC's yearly release table: date, release number linking to the release, title.
+    Dates carry no time, so each release is stamped at the start of its Eastern day."""
+    entries = []
+    for row in re.findall(r'<tr\b.*?</tr>', markup, re.S | re.I):
+        cells = re.findall(r'<td\b[^>]*>(.*?)</td>', row, re.S | re.I)
+        link = re.search(r'href="([^"]+)"', cells[1]) if len(cells) == 3 else None
+        if not link:
+            continue
+        try:
+            day = datetime.strptime(text(cells[0]), '%m/%d/%Y').replace(tzinfo=EASTERN)
+        except ValueError:
+            continue
+        entries.append((cells[2], urljoin(NRC_RELEASES, text(link[1])), day, ''))
+    return _articles(entries, source, now or datetime.now(timezone.utc))
+
+
+def _articles(entries, source: str, now: datetime) -> list[dict]:
+    """(title markup, link, aware datetime or None, description markup) -> feed items."""
     articles = []
-    for title, link, published, description in items:
+    for title, link, moment, description in entries:
         title, url = text(title), _https(link)
-        moment = parse_date(published, now)
         # Future dates are publisher errors; a small allowance covers clock skew.
         if not title or not url.startswith('https://') or moment is None or moment > now + timedelta(minutes=10):
             continue
@@ -152,8 +178,22 @@ def carry_forward(new: dict, previous: dict | None) -> dict:
     return {**new, 'items': items, 'observed_at': items[0]['published']}
 
 
+async def fetch_nrc_releases(client) -> list[dict]:
+    year = datetime.now(EASTERN).year
+    for y in (year, year - 1):  # in early January the new year's listing is a page without rows
+        response = await client.get(f'{NRC_RELEASES}/{y}', headers=NRC_HEADERS)
+        response.raise_for_status()
+        try:
+            return parse_nrc_releases(response.text)
+        except ValueError:
+            if y != year:
+                raise
+
+
 async def fetch_feeds(client) -> dict:
     async def one(name, url, timeout, headers):
+        if url == NRC_RELEASES:
+            return await asyncio.wait_for(fetch_nrc_releases(client), timeout)
         response = await asyncio.wait_for(client.get(url, headers=headers), timeout)
         response.raise_for_status()
         return parse_feed(response.content, name)

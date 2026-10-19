@@ -77,6 +77,8 @@ class ApiTest(unittest.TestCase):
         body = self.get('/api/status')
         self.assertEqual(set(body['sources']), set(index.SOURCES))
         self.assertTrue(all(m['resolution'] in ('time', 'day', 'month') for m in body['sources'].values()))
+        wna_meta = body['sources']['wna']
+        self.assertEqual((wna_meta['observed_at'], wna_meta['resolution']), ('2026-10-08T00:00:00+00:00', 'day'))
 
 
 if __name__ == '__main__':

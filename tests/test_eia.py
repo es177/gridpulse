@@ -1,6 +1,7 @@
 import asyncio
 import json
 import sys
+import time
 import unittest
 from datetime import datetime
 from pathlib import Path
@@ -206,6 +207,34 @@ class FetchTest(unittest.TestCase):
         self.assertEqual(self.run_fetch(eia.fetch_fuel, handler)['via'], 'eia-930-api')
         self.assertEqual(self.run_fetch(eia.fetch_prices, handler)['via'], 'eia-epm-table')
 
+    def test_slow_v2_is_raced_by_the_fallback_instead_of_awaited(self):
+        # An uncached v2 query can take a minute; the fallback must not wait for it to time out.
+        seen = []
+
+        async def handler(request):
+            seen.append(request.url.host)
+            if request.url.host == 'api.eia.gov':
+                await asyncio.sleep(5)
+                return httpx.Response(200, json=load('v2_region_data.json'))
+            return httpx.Response(200, json=load('930_region_data.json'))
+        hedge = eia.HEDGE_AFTER
+        eia.HEDGE_AFTER = 0.05
+        try:
+            started = time.monotonic()
+            self.assertEqual(self.run_fetch(eia.fetch_grid, handler)['via'], 'eia-930-api')
+            self.assertLess(time.monotonic() - started, 2)
+        finally:
+            eia.HEDGE_AFTER = hedge
+        self.assertEqual(seen, ['api.eia.gov', 'www.eia.gov'])
+
+    def test_fallback_budget_fits_the_refresh_budget(self):
+        sys.path.insert(0, str(ROOT / 'api'))
+        from sources import SOURCES
+        for name in ('eia_grid', 'eia_fuel', 'eia_prices'):
+            budget = SOURCES[name].timeout
+            self.assertLess(eia.HEDGE_AFTER + eia.FALLBACK_TIMEOUT, budget)
+            self.assertLess(eia.V2_TIMEOUT, budget)
+
     def test_double_failure_reports_both_paths_without_leaking_the_key(self):
         def handler(request):
             return httpx.Response(503 if request.url.host == 'api.eia.gov' else 500)
@@ -217,6 +246,25 @@ class FetchTest(unittest.TestCase):
             self.assertIn('fallback HTTP 500', message)
             self.assertNotIn(eia.api_key(), message)
 
+
+class EchoedForecastTest(unittest.TestCase):
+    def test_trailing_demand_equal_to_forecast_is_not_reported(self):
+        hours = [f'2026-10-19T0{h}:00:00+00:00' for h in range(6)]
+        points = []
+        for code, _ in eia.REGIONS:
+            for i, hour in enumerate(hours):
+                points += [(code, 'D', hour, 1000 + i), (code, 'DF', hour, 990 + i)]
+        # CAISO's last two hours repeat the forecast; an earlier exact match is a coincidence.
+        points += [('CISO', 'D', hours[1], 500), ('CISO', 'DF', hours[1], 500),
+                   ('CISO', 'D', hours[4], 777), ('CISO', 'DF', hours[4], 777),
+                   ('CISO', 'D', hours[5], 778), ('CISO', 'DF', hours[5], 778)]
+        regions = {r['id']: r for r in eia.build_grid(points, 'test')['regions']}
+        caiso = regions['CISO']
+        self.assertEqual(caiso['latest']['t'], hours[3])
+        self.assertEqual([p['d'] for p in caiso['series'][-2:]], [None, None])
+        self.assertEqual([p['df'] for p in caiso['series'][-2:]], [777, 778])  # the forecast stays
+        self.assertEqual(caiso['series'][1]['d'], 500)
+        self.assertEqual(regions['US48']['latest']['t'], hours[5])
 
 if __name__ == '__main__':
     unittest.main()

@@ -7,10 +7,11 @@ What each number means and where it can mislead. The UI keeps these to one line 
 - Hourly values are MWh per hour, shown as average MW (and GW). Timestamps are the UTC hour as reported by EIA.
 - Demand arrives about 1 hour after the hour. Net generation, interchange and the US48 fuel mix arrive about 22 hours later, so they carry their own timestamps and their chart lines end earlier.
 - Day-ahead forecasts (DF) are published 3–6 hours ahead by each balancing area. The Lower 48 forecast is a partial sum of the areas that have reported. It runs 2–5% below demand for settled hours and much lower for the latest ones, so it is neither drawn nor compared for Lower 48.
+- CAISO's newest hours in EIA-930 repeat its day-ahead forecast until actuals arrive (typically 3–4 hours). A trailing run where demand equals the forecast exactly is treated as not yet reported, so CAISO's latest hour can lag the others. The Lower 48 total still includes those hours, a difference well under 0.5%.
 - Total interchange is positive for net exports; net imports are shown as its negative.
 - Lower 48 overlaps the seven ISO regions. Never add them together.
 - Fuel mix keeps only hours where nuclear, gas, coal, wind, solar and hydro are all reported. Oil, geothermal and biomass are shown as Other. Storage charging is not stacked.
-- Requests use `EIA_API_KEY` or `DEMO_KEY` against API v2. If v2 fails or is rate-limited, the same series come from EIA's keyless Grid Monitor endpoints (about 11 s), and retail prices from Electric Power Monthly table 5.6.A.
+- Requests use `EIA_API_KEY` or `DEMO_KEY` against API v2. v2 answers a repeated query in under a second, but a new one can take a minute. So if v2 fails or has not answered within a second, the same series are also requested from EIA's keyless Grid Monitor endpoints (10–25 s), and retail prices from Electric Power Monthly table 5.6.A; the first valid answer is used.
 
 ## Grid operator feeds (Live ISOs)
 
@@ -26,20 +27,21 @@ What each number means and where it can mislead. The UI keeps these to one line 
 - Series are downsampled to 15-minute points over the operator's local operating day.
 - MISO's operating day follows Eastern Standard Time all year.
 - Mix totals can differ from load because of imports, losses and what each operator includes.
+- For NYISO and ISO-NE the generation mix can be one 5-minute interval older than the load shown.
 - PJM's real-time data needs a registered key, so PJM appears only in the hourly EIA data.
 
 ## NRC (Reactors)
 
-- Percent power from the daily power reactor status report, published each business day for that morning. Weekends and federal holidays have no report.
+- Percent power from the daily power reactor status report. Every calendar day has a report, weekends and holidays included, but reports are posted on business days, so early on a Monday the latest can still be Friday's.
 - Status: full ≥ 95%, reduced 1–94%, offline 0%. "Since" scans back through the history; when it equals the first date in the file it means "at least since".
 - Estimated output = reported percent × nameplate MWe (EIA-860M, in `api/data/reactors.json`). Actual net output differs with season and plant conditions.
 - Coordinates, licensed MWt and MWe are reference data joined by NRC docket number.
-- Event notification reports are summarized from structured fields only. Narratives, which name individuals, are not republished.
+- Event notification reports are summarized from structured fields and the narrative's one-line all-caps subject heading. The rest of the narrative, which names individuals, is not republished.
 - NRC's bot filter rejects browser-like user agents; requests use an honest client identifier.
 
 ## Feeds
 
-World Nuclear News, NRC News, NRC event reports, DOE Office of Nuclear Energy, EIA Today in Energy, PJM Inside Lines and ISO New England. Tags come from a keyword tagger and do not assert that a policy is enacted or a project built. A failing feed is listed and skipped without blocking the others.
+World Nuclear News, NRC News, NRC event reports, DOE Office of Nuclear Energy, EIA Today in Energy, PJM Inside Lines and ISO New England. Tags come from a keyword tagger and do not assert that a policy is enacted or a project built. A failing feed is listed and skipped without blocking the others. NRC News comes from NRC's yearly release listing, which has dates only, so releases are stamped at midnight Eastern.
 
 ## Prices
 

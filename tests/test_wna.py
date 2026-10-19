@@ -19,6 +19,9 @@ class WorldTest(unittest.TestCase):
         self.assertEqual(len(self.data['countries']), 42)
         self.assertEqual(self.data['generation_year'], 2025)
         self.assertEqual(self.data['updated'], '2026-10-08')
+        self.assertEqual(self.data['observed_at'], '2026-10-08T00:00:00+00:00')
+        undated = wna.parse_world(FIXTURE.read_text(encoding='utf-8').replace('Updated', 'Revised'))
+        self.assertIsNone(undated['observed_at'])  # falls back to fetched_at for staleness
         world = self.data['world']
         self.assertEqual((world['operable'], world['operable_mwe']), (442, 405227))
         self.assertTrue(world['share_approx'])

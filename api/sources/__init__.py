@@ -43,7 +43,7 @@ SOURCES = {
     'wna': Source('wna', wna.fetch_world, ttl=DAY, stale_after=60 * DAY,
                   label='World Nuclear Association fleet table',
                   url='https://world-nuclear.org/information-library/facts-and-figures/world-nuclear-power-reactors-and-uranium-requireme',
-                  cadence='Monthly'),
+                  cadence='Monthly', resolution='day'),
 }
 
 ISO_KEYS = [f'iso_{key}' for key in iso.ISOS]

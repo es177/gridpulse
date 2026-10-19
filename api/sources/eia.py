@@ -1,8 +1,8 @@
 """EIA electricity data: hourly grid (EIA-930), US48 fuel mix, monthly retail prices.
 
 The documented v2 API is the primary path. Its shared DEMO_KEY allows about ten
-requests an hour, so each fetcher makes one v2 request and, when v2 fails, falls
-back to keyless EIA endpoints: the Grid Monitor's 930-api for hourly data and
+requests an hour, so each fetcher makes one v2 request and, when v2 fails or is
+slow, races keyless EIA endpoints: the Grid Monitor's 930-api for hourly data and
 Electric Power Monthly table 5.6.A for prices.
 
 EIA-930 timing: demand (D) arrives about an hour after the hour; net generation
@@ -11,6 +11,7 @@ UTC, identical in both APIs.
 """
 from __future__ import annotations
 
+import asyncio
 import os
 import re
 from datetime import datetime, timedelta, timezone
@@ -28,13 +29,18 @@ GRID_URL = 'https://www.eia.gov/electricity/gridmonitor/'
 PRICES_URL = 'https://www.eia.gov/electricity/data/browser/'
 PRICE_TABLE = 'https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a'
 
-# v2 answers in ~1-2 s or fails fast on rate limits; the 930-api takes ~10-12 s.
-V2_TIMEOUT = 8.0
-FALLBACK_TIMEOUT = 15.0
+# v2 replays a query it has answered before in under a second, but a new query (the
+# start hour moves every hour) takes 40-90 s. EIA finishes and caches it even after we
+# hang up, so the next refresh usually hits. The 930-api takes 10-25 s. The fallback
+# therefore starts after HEDGE_AFTER, not after v2 gives up; all within the 25 s budget.
+HEDGE_AFTER = 1.0
+V2_TIMEOUT = 24.0
+FALLBACK_TIMEOUT = 23.0
 
 GRID_HOURS = 72
 FUEL_HOURS = 96
 FORECAST_HOURS = 24
+ECHO_HOURS = 6       # most trailing hours checked for demand that only repeats the forecast
 PRICE_MONTHS = 23  # 52 geographies x 4 sectors x 24 months stays under v2's 5000-row cap
 
 REGIONS = (('US48', 'Lower 48'), ('PJM', 'PJM'), ('MISO', 'MISO'), ('ERCO', 'ERCOT'),
@@ -138,6 +144,12 @@ def build_grid(points, via: str) -> dict:
     regions = []
     for code, name in REGIONS:
         hours = by_region.get(code, {})
+        # CAISO fills its newest few hours with the day-ahead forecast until actuals arrive.
+        # A trailing run where demand equals the forecast exactly is treated as not reported.
+        for hour in sorted((h for h, v in hours.items() if 'd' in v), reverse=True)[:ECHO_HOURS]:
+            if code == 'US48' or hours[hour].get('df') != hours[hour]['d']:
+                break
+            del hours[hour]['d']
         reported = [h for h, v in hours.items() if 'd' in v]
         if not reported:
             continue
@@ -316,14 +328,27 @@ async def _api930(client, route: str, params: dict, hours: int):
     return response.json()
 
 
+FETCH_ERRORS = (httpx.HTTPError, ValueError, KeyError, TypeError)
+
+
 async def _with_fallback(label: str, primary, fallback):
+    """v2's answer, unless it fails or is still running after HEDGE_AFTER seconds; then the
+    fallback runs alongside it and the first valid answer wins."""
+    tasks = [asyncio.ensure_future(primary())]
     try:
-        return await primary()
-    except (httpx.HTTPError, ValueError, KeyError, TypeError) as first:
-        try:
-            return await fallback()
-        except (httpx.HTTPError, ValueError, KeyError, TypeError) as second:
-            raise ValueError(f'EIA {label} unavailable: v2 {reason(first)}; fallback {reason(second)}') from None
+        done, _ = await asyncio.wait(tasks, timeout=HEDGE_AFTER)
+        if not done or tasks[0].exception() is not None:
+            tasks.append(asyncio.ensure_future(fallback()))
+        for finished in asyncio.as_completed(tasks):
+            try:
+                return await finished
+            except FETCH_ERRORS:
+                continue
+    finally:
+        for task in tasks:
+            task.cancel()
+    first, second = (task.exception() for task in tasks)
+    raise ValueError(f'EIA {label} unavailable: v2 {reason(first)}; fallback {reason(second)}') from None
 
 
 async def fetch_grid(client) -> dict:

@@ -1,7 +1,10 @@
+import asyncio
 import sys
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
+
+import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'api' / 'sources'))
@@ -9,8 +12,13 @@ import feeds  # noqa: E402
 
 FIXTURES = ROOT / 'tests' / 'fixtures' / 'feeds'
 NOW = datetime(2026, 10, 13, 2, 0, tzinfo=timezone.utc)
-FILES = {'World Nuclear News': 'wnn.xml', 'NRC News': 'nrc_news.xml', 'EIA Today in Energy': 'eia_tie.xml',
+FILES = {'World Nuclear News': 'wnn.xml', 'NRC News': 'nrc_releases.html', 'EIA Today in Energy': 'eia_tie.xml',
          'PJM Inside Lines': 'pjm.xml', 'ISO New England': 'isone.xml'}
+
+# NRC wraps every RSS value in padded CDATA.
+PADDED = b'''<rss><channel><item><pubDate><![CDATA[ Mon, 14 Sep 2026 08:00:00 GMT ]]></pubDate>
+<title><![CDATA[ NRC Advisory: Public Meeting ]]></title><link><![CDATA[ https://www.nrc.gov/a.pdf ]]></link>
+</item></channel></rss>'''
 
 ATOM = b'''<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom"><title>Example</title>
@@ -21,12 +29,15 @@ ATOM = b'''<?xml version="1.0" encoding="utf-8"?>
 </feed>'''
 
 
-def parse(name):
-    return feeds.parse_feed((FIXTURES / FILES[name]).read_bytes(), name, NOW)
+def parse(name, now=NOW):
+    raw = (FIXTURES / FILES[name]).read_bytes()
+    if name == 'NRC News':
+        return feeds.parse_nrc_releases(raw.decode('utf-8'), name, now)
+    return feeds.parse_feed(raw, name, now)
 
 
 class FeedTest(unittest.TestCase):
-    def test_rss_fixtures_parse_with_dates_and_clean_text(self):
+    def test_fixtures_parse_with_dates_and_clean_text(self):
         for name in FILES:
             items = parse(name)
             self.assertTrue(items, name)
@@ -40,7 +51,8 @@ class FeedTest(unittest.TestCase):
     def test_eia_missing_year_and_padded_dates(self):
         eia = parse('EIA Today in Energy')
         self.assertEqual(eia[0]['published'], '2026-10-09T14:00:00+00:00')  # "Fri, 09 Oct  09:00:00 EST"
-        self.assertEqual(parse('NRC News')[0]['published'], '2026-09-14T08:00:00+00:00')
+        padded = feeds.parse_feed(PADDED, 'NRC News', NOW)[0]
+        self.assertEqual((padded['published'], padded['url']), ('2026-09-14T08:00:00+00:00', 'https://www.nrc.gov/a.pdf'))
         self.assertEqual(feeds.parse_date('Fri, 09 Jan 09:00:00 EST', datetime(2026, 1, 5, tzinfo=timezone.utc)).year, 2025)
 
     def test_boilerplate_and_implied_tags(self):
@@ -50,6 +62,32 @@ class FeedTest(unittest.TestCase):
         self.assertTrue(all('nuclear' in i['tags'] for i in parse('NRC News')))
         self.assertEqual(feeds.tag('New data center load in Virginia'), ['ai-load', 'grid'])
         self.assertEqual(feeds.tag('Window maintenance'), [])
+
+    def test_nrc_release_listing(self):
+        items = parse('NRC News', datetime(2026, 10, 19, tzinfo=timezone.utc))
+        self.assertEqual(len(items), 5)
+        self.assertEqual(items[0]['title'], 'NRC Updates AP1000 Design Certification, Streamlines Future Reactor Licensing')
+        self.assertEqual(items[0]['url'], 'https://www.nrc.gov/about-nrc/news-releases/2026/26-080')
+        self.assertEqual(items[0]['published'], '2026-10-14T04:00:00+00:00')  # date only: midnight EDT
+        self.assertEqual(items[-1]['published'], '2026-01-27T05:00:00+00:00')  # midnight EST
+        self.assertEqual(items[2]['title'], 'NRC Approves Construction of Nation’s First Small Modular Reactor')
+        self.assertEqual(len(parse('NRC News')), 3)  # releases dated after NOW are dropped
+        with self.assertRaises(ValueError):
+            feeds.parse_nrc_releases('<table><tr><th>Date</th></tr></table>', 'NRC News', NOW)
+
+    def test_nrc_listing_falls_back_to_last_year_while_new_year_is_empty(self):
+        year = datetime.now(feeds.EASTERN).year
+        pages = {f'{feeds.NRC_RELEASES}/{year}': '<html><p>No releases yet</p></html>',
+                 f'{feeds.NRC_RELEASES}/{year - 1}': (FIXTURES / FILES['NRC News']).read_text(encoding='utf-8')}
+
+        class Client:
+            async def get(self, url, headers=None):
+                return httpx.Response(200, text=pages[url], request=httpx.Request('GET', url))
+
+        self.assertEqual(len(asyncio.run(feeds.fetch_nrc_releases(Client()))), 5)
+        pages[f'{feeds.NRC_RELEASES}/{year - 1}'] = '<html></html>'
+        with self.assertRaises(ValueError):
+            asyncio.run(feeds.fetch_nrc_releases(Client()))
 
     def test_atom_entries_and_rejections(self):
         items = feeds.parse_feed(ATOM, 'Example', NOW)

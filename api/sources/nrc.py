@@ -161,8 +161,8 @@ HEADLINE_PREFIX = re.compile(r'^(?:NON-)?(?:AGREEMENT STATE|PART 21)(?:\s+REPORT
 
 
 def parse_events(markup: str, page_url: str) -> list[dict]:
-    """Events from one daily report page. Built from structured fields only: the free-text
-    narrative names and contact details of individuals, so it is not republished."""
+    """Events from one daily report page. Built from structured fields and the narrative's all-caps
+    subject line only: the rest of the narrative names individuals, so it is not republished."""
     items = []
     for chunk in re.split(r'<div class="grid border" id="en', markup)[1:]:
         number_match = re.match(r'(\d+)"', chunk)
