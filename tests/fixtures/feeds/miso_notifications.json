@@ -1,0 +1,68 @@
+[
+ {
+  "notificationTopic": "RealTime",
+  "subject": "Capacity Advisory Declaration Termination",
+  "body": "MISO is terminating the Capacity Advisory Declaration as of 10/14/2026 23:59 EST.<br><br>Affected Region(s):<br>&nbsp;&nbsp;&nbsp;&nbsp; South Region - CLEC, EES, EAI, LAFA, LEPA, SME, EMBA, AXLT, CWLT, LAGT, PLCN, SHTO, LATO<br>&nbsp;&nbsp;&nbsp;&nbsp; Central Region - MCS-WPSC, AMRN, BREC, ALTE, AMIL, AMMO, CIN, CWLD, CWLP, HE, IPL, MECS, MGE, NIPS, SIGE, SIPC, UPPC, WEC, WPS, ALT, ATC, METC, ITC, BWLT, CONS, AEP, PION, DECO, GLH, RTX, MIUP, HMPL, MEC1, CECT, SBMU, LST, NYFL<br>&nbsp;&nbsp;&nbsp;&nbsp; North Region - MCS-CFU, ALTW, DPC, GRE, MDU, MEC, MHEB, MP, MPW, NSP, OTP, SMP, ITCM, RPU, MPCN, WMUT<br><br>This public notification is for awareness only. Impacted entities receive detailed instructions and information via the Operator Interface.",
+  "publishDateUnformatted": "2026-10-14T23:59:23+00:00",
+  "publishDate": "10/14/2026 11:59 PM EST",
+  "permanentLinkUrl": "/markets-and-operations/notifications/real-time-operations-notifications/real-time-notification/?id=2397",
+  "id": 2397,
+  "notificationId": 2397,
+  "contentGuid": "00000000-0000-0000-0000-000000000000"
+ },
+ {
+  "notificationTopic": "RealTime",
+  "subject": "Load Pocket Advisory Declaration",
+  "body": "MISO has issued a Load Pocket Advisory Declaration for Western due to:<br>&nbsp;&nbsp;&nbsp;&nbsp;Load Pocket Advisory Reason: 5+ hours of N-1/G-1 insufficiency in the 24 hour operating day with any magnitude deficit<br><br>Start: 10/15/2026 12:00 EST<br>End: 10/15/2026 20:00 EST<br><br>Affected Region(s):<br>&nbsp;&nbsp;&nbsp;&nbsp; South Region - EES<br><br>This public notification is for awareness only. Impacted entities receive detailed instructions and information via the Operator Interface.",
+  "publishDateUnformatted": "2026-10-14T15:05:46+00:00",
+  "publishDate": "10/14/2026 3:05 PM EST",
+  "permanentLinkUrl": "/markets-and-operations/notifications/real-time-operations-notifications/real-time-notification/?id=2396",
+  "id": 2396,
+  "notificationId": 2396,
+  "contentGuid": "00000000-0000-0000-0000-000000000000"
+ },
+ {
+  "notificationTopic": "RealTime",
+  "subject": "Updated: Conservative Operations Declaration",
+  "body": "MISO has updated a Conservative Operations Declaration due to:<br>&nbsp;&nbsp;&nbsp;&nbsp;This declaration is occurring because: Above normal temps and higher than forecasted load<br><br>Start: 10/12/2026 06:00 EST<br>End: 10/14/2026 23:59 EST<br><br>Affected Region(s):<br>&nbsp;&nbsp;&nbsp;&nbsp; South Region - CLEC, EES, EAI, LAFA, LEPA, SME, EMBA, AXLT, CWLT, LAGT, PLCN, SHTO, LATO<br>&nbsp;&nbsp;&nbsp;&nbsp; Central Region - MCS-WPSC, AMRN, BREC, ALTE, AMIL, AMMO, CIN, CWLD, CWLP, HE, IPL, MECS, MGE, NIPS, SIGE, SIPC, UPPC, WEC, WPS, ALT, ATC, METC, ITC, BWLT, CONS, AEP, PION, DECO, GLH, RTX, MIUP, HMPL, MEC1, CECT, SBMU, LST, NYFL<br>&nbsp;&nbsp;&nbsp;&nbsp; North Region - MCS-CFU, ALTW, DPC, GRE, MDU, MEC, MHEB, MP, MPW, NSP, OTP, SMP, ITCM, RPU, MPCN, WMUT<br><br>This public notification is for awareness only. Impacted entities receive detailed instructions and information via the Operator Interface.",
+  "publishDateUnformatted": "2026-10-13T15:32:02+00:00",
+  "publishDate": "10/13/2026 3:32 PM EST",
+  "permanentLinkUrl": "/markets-and-operations/notifications/real-time-operations-notifications/real-time-notification/?id=2393",
+  "id": 2393,
+  "notificationId": 2393,
+  "contentGuid": "00000000-0000-0000-0000-000000000000"
+ },
+ {
+  "notificationTopic": "RealTime",
+  "subject": "Maximum Generation Warning",
+  "body": "MISO has issued a Maximum Generation Warning due to:<br>&nbsp;&nbsp;&nbsp;&nbsp;Forced generation outages<br>&nbsp;&nbsp;&nbsp;&nbsp;Above normal temperatures<br><br>Start: 10/13/2026 16:00 EST<br>End: 10/13/2026 21:00 EST<br><br>Affected Region(s):<br>&nbsp;&nbsp;&nbsp;&nbsp; South Region - CLEC, EES, EAI, LAFA, LEPA, SME, EMBA, AXLT, CWLT, LAGT, PLCN, SHTO, LATO<br>&nbsp;&nbsp;&nbsp;&nbsp; Central Region - AMRN, BREC, ALTE, AMIL, AMMO, CIN, CWLD, CWLP, HE, IPL, MECS, MGE, NIPS, SIGE, SIPC, UPPC, WEC, WPS, ALT, ATC, METC, ITC, CONS, PION, DECO, GLH, RTX, MIUP, HMPL, MEC1, CECT, SBMU, LST, NYFL<br>&nbsp;&nbsp;&nbsp;&nbsp; North Region - ALTW, DPC, GRE, MDU, MEC, MP, MPW, NSP, OTP, SMP, ITCM<br><br>Emergency Tier Pricing I implemented.<br><br>This public notification is for awareness only. Impacted entities receive detailed instructions and information via the Operator Interface.",
+  "publishDateUnformatted": "2026-10-12T15:42:25+00:00",
+  "publishDate": "10/12/2026 3:42 PM EST",
+  "permanentLinkUrl": "/markets-and-operations/notifications/real-time-operations-notifications/real-time-notification/?id=2390",
+  "id": 2390,
+  "notificationId": 2390,
+  "contentGuid": "00000000-0000-0000-0000-000000000000"
+ },
+ {
+  "notificationTopic": "RealTime",
+  "subject": "Geomagnetic Disturbance Warning",
+  "body": "MISO has issued a Geomagnetic Disturbance Warning due to:<br>&nbsp;&nbsp;&nbsp;&nbsp;Geomagnetic K-index of: 7<br><br>Start: 10/10/2026 12:45 EST<br>End: 10/10/2026 18:59 EST<br><br>Affected Region(s):<br>&nbsp;&nbsp;&nbsp;&nbsp; North<br>&nbsp;&nbsp;&nbsp;&nbsp; Central<br>&nbsp;&nbsp;&nbsp;&nbsp; South<br><br>This public notification is for awareness only. Impacted entities receive detailed instructions and information via the Operator Interface.",
+  "publishDateUnformatted": "2026-10-10T12:56:34+00:00",
+  "publishDate": "10/10/2026 12:56 PM EST",
+  "permanentLinkUrl": "/markets-and-operations/notifications/real-time-operations-notifications/real-time-notification/?id=2384",
+  "id": 2384,
+  "notificationId": 2384,
+  "contentGuid": "00000000-0000-0000-0000-000000000000"
+ },
+ {
+  "notificationTopic": "RealTime",
+  "subject": "Capacity Advisory Declaration",
+  "body": "MISO has issued a Capacity Advisory Declaration due to:<br>&nbsp;&nbsp;&nbsp;&nbsp;Above normal temperatures<br>&nbsp;&nbsp;&nbsp;&nbsp;Higher than forecasted load<br><br>Start: 10/12/2026 06:00 EST<br><br>Affected Region(s):<br>&nbsp;&nbsp;&nbsp;&nbsp; South Region - CLEC, EES, EAI, LAFA, LEPA, SME, EMBA, AXLT, CWLT, LAGT, PLCN, SHTO, LATO<br>&nbsp;&nbsp;&nbsp;&nbsp; Central Region - MCS-WPSC, AMRN, BREC, ALTE, AMIL, AMMO, CIN, CWLD, CWLP, HE, IPL, MECS, MGE, NIPS, SIGE, SIPC, UPPC, WEC, WPS, ALT, ATC, METC, ITC, BWLT, CONS, AEP, PION, DECO, GLH, RTX, MIUP, HMPL, MEC1, CECT, SBMU, LST, NYFL<br>&nbsp;&nbsp;&nbsp;&nbsp; North Region - MCS-CFU, ALTW, DPC, GRE, MDU, MEC, MHEB, MP, MPW, NSP, OTP, SMP, ITCM, RPU, MPCN, WMUT<br><br>This public notification is for awareness only. Impacted entities receive detailed instructions and information via the Operator Interface.",
+  "publishDateUnformatted": "2026-10-09T13:18:26+00:00",
+  "publishDate": "10/09/2026 1:18 PM EST",
+  "permanentLinkUrl": "/markets-and-operations/notifications/real-time-operations-notifications/real-time-notification/?id=2379",
+  "id": 2379,
+  "notificationId": 2379,
+  "contentGuid": "00000000-0000-0000-0000-000000000000"
+ }
+]

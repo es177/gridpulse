@@ -4,13 +4,15 @@ import { useNow, useQueryText } from '../lib/hooks'
 import { useRoute, setParam } from '../lib/router'
 import { fullDate, time } from '../lib/format'
 import { byDay, counts, filterItems } from '../lib/derive'
-import { Board, Tile, SourceTag, Seg, Tag, Empty, Skeleton, Banner, LoadState } from '../components/ui'
+import { Board, Tile, SourceTag, Seg, Tag, Ext, Empty, Skeleton, Banner, LoadState } from '../components/ui'
 
+// Topics in filter order. Plant events are NRC reports: reactor trips, safety conditions, emergencies.
 const TAGS = {
-  'nrc-event': 'NRC event', scram: 'Scram', emergency: 'Emergency', 'ai-load': 'Large loads',
-  grid: 'Grid', nuclear: 'Nuclear', storage: 'Storage', supply: 'Supply',
+  reliability: 'Reliability', nuclear: 'Nuclear', demand: 'Demand', markets: 'Markets',
+  generation: 'Generation', storage: 'Storage', 'nrc-event': 'Plant event', scram: 'Scram', emergency: 'Emergency',
 }
 const TAG_TONE = { scram: 'bad', emergency: 'bad', 'nrc-event': 'warn' }
+const FILTERS = Object.keys(TAGS).filter(t => t !== 'scram' && t !== 'emergency')
 const PAGE = 60
 const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 
@@ -26,7 +28,7 @@ function DayLabel({ iso }) {
 function Item({ item }) {
   return (
     <li>
-      <a className="title" href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
+      <Ext className="title" href={item.url}>{item.title}</Ext>
       <div className="meta">
         <time dateTime={item.published} title={fullDate(item.published)}>{time(item.published)}</time>
         <span>{item.source}</span>
@@ -48,7 +50,10 @@ export default function Feed() {
   const items = res.data?.items
   const all = useMemo(() => items || [], [items])
   const publishers = useMemo(() => counts(all, 'source'), [all])
-  const tags = useMemo(() => counts(all, 'tags').slice(0, 8), [all])
+  const tags = useMemo(() => {
+    const n = Object.fromEntries(counts(all, 'tags'))
+    return FILTERS.filter(t => n[t]).map(t => [t, n[t]])
+  }, [all])
   const shown = useMemo(() => filterItems(all, { q: dq, source, tag }), [all, dq, source, tag])
   const days = useMemo(() => byDay(shown.slice(0, limit)), [shown, limit])
   useEffect(() => setLimit(PAGE), [dq, source, tag])
@@ -69,12 +74,12 @@ export default function Feed() {
         </select>
         {tags.length > 0 && (
           <Seg label="Topic" value={tag} onChange={t => setParam('tag', t || null)}
-            options={[['', 'all'], ...tags.map(([t, n]) => [t, (TAGS[t] || t).toLowerCase(), n])]} />
+            options={[['', 'all'], ...tags.map(([t, n]) => [t, TAGS[t].toLowerCase(), n])]} />
         )}
         {res.data && <span className="count">{shown.length}/{all.length}</span>}
       </div>
       <Board>
-        <Tile flush label="Updates" hint="News and regulator notices, newest first. NRC event reports are formal notices of plant events; most are minor."
+        <Tile flush label="Updates" hint="Significant news straight from regulators, grid operators and agencies, newest first. Routine notices, meetings and promotions are filtered out; plant events are the NRC's reports of reactor trips, safety problems and emergencies."
           meta={<><SourceTag meta={res.data?.sources?.feeds} name="feeds" /><SourceTag meta={res.data?.sources?.nrc_events} name="NRC events" /></>}>
           {!res.data ? <Skeleton height={360} />
             : !shown.length ? <Empty>no match · <button className="btn bare" type="button" onClick={clear}>clear</button></Empty>

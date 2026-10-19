@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>EIA Press Releases</title>
+    <item>
+      <title>EIA expects a mixed picture for winter fuel costs this year</title>
+      <link>/pressroom/releases/press593.php</link>
+      <description>In the 2026-27 Winter Fuels Outlook, released alongside the October Short-Term Energy Outlook (STEO), the U.S. Energy Information Administration (EIA) expects U.S. households that primarily heat with natural gas or propane - about half of households - will spend less on energy expenses this winter than last winter. By contrast, households that primarily use electricity or heating oil for space heating are expected to spend more.</description>
+      <pubDate>Tue, 06 Oct 2026 12:00:00 EST</pubDate>
+    </item>
+    <item>
+      <title>EIA expects record electricity generation in 2026 and 2027</title>
+      <link>/pressroom/releases/press592.php</link>
+      <description>The U.S. Energy Information Administration (EIA) expects U.S. electricity generation will grow 2.2% to a record 4,368 billion kilowatthours (BkWh) this year. EIA expects an additional 1.7% growth in electricity generation next year.</description>
+      <pubDate>Wed, 09 Sep 2026 12:00:00 EST</pubDate>
+    </item>
+    <item>
+      <title>EIA expects highest natural gas inventories in a decade heading into winter</title>
+      <link>/pressroom/releases/press591.php</link>
+      <description>The U.S. Energy Information Administration expects natural gas inventories will increase to 3,985 billion cubic feet (Bcf) in October, the most gas in inventories ahead of the winter heating season since 2016.</description>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 EST</pubDate>
+    </item>
+    <item>
+      <title>EIA forecasts strongest four-year growth in U.S. electricity demand since 2000, fueled by data centers</title>
+      <link>/pressroom/releases/press582.php</link>
+      <description>The U.S. Energy Information Administration (EIA) published its first energy-sector forecasts through 2027 in the January Short-Term Energy Outlook (STEO).</description>
+      <pubDate>Tue, 13 Jan 2026 12:00:00 EST</pubDate>
+    </item>
+  </channel>
+</rss>

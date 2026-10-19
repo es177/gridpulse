@@ -121,5 +121,23 @@ class EventsTest(unittest.TestCase):
             self.assertLessEqual(len(item['summary']), 280)
 
 
+    def test_feed_keeps_reactor_events_scrams_and_emergencies_only(self):
+        pages = [nrc.parse_events(read(f'events_{day}.html'), 'u') for day in ('20261009', '20261008')]
+        significant = {i['id']: i['category'] for i in nrc.merge_events(pages) if i['significant']}
+        self.assertIn('EN-58484', significant)                   # Browns Ferry 1, power reactor
+        self.assertEqual(set(significant.values()), {'Power Reactor'})  # materials and medical reports dropped
+        self.assertNotIn('EN-58471', significant)                # Agreement State shutter
+
+    def test_links_stay_on_nrc(self):
+        self.assertEqual(nrc.nrc_url('/reactors/a.html'), 'https://www.nrc.gov/reactors/a.html')
+        self.assertEqual(nrc.nrc_url('https://www.nrc.gov/b'), 'https://www.nrc.gov/b')
+        for bad in ('javascript:alert(1)', '//evil.example/x', 'https://www.nrc.gov.evil.example/', 'http://www.nrc.gov/c', ''):
+            self.assertIsNone(nrc.nrc_url(bad), bad)
+
+    def test_sentence_case_keeps_plant_acronyms(self):
+        self.assertEqual(nrc.sentence_case('RCS PRESSURE BOUNDARY DEGRADED'), 'RCS pressure boundary degraded')
+        self.assertEqual(nrc.sentence_case('LOSS OF ECCS (HPCI) INJECTION'), 'Loss of ECCS (HPCI) injection')
+        self.assertEqual(nrc.sentence_case('Degraded Condition'), 'Degraded condition')
+
 if __name__ == '__main__':
     unittest.main()

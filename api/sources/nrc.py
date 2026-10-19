@@ -7,10 +7,7 @@ import io
 import re
 from datetime import date, datetime, timezone
 
-try:
-    from zoneinfo import ZoneInfo
-except ImportError:  # pragma: no cover - Python < 3.9
-    from backports.zoneinfo import ZoneInfo  # type: ignore
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -28,7 +25,14 @@ EVENTS_URL = BASE + '/documents-reports/document-collections/events-reports-asso
 # NRC's bot filter only admits user agents carrying a known HTTP client token.
 NRC_HEADERS = {**HEADERS, 'User-Agent': f'GridPulse/2.0 python-httpx/{httpx.__version__}'}
 EASTERN = ZoneInfo('America/New_York')
-EVENT_PAGES = 6  # newest daily reports to read; events repeat across days as they update
+
+
+def nrc_url(href: str) -> str | None:
+    """Absolute link on NRC's own site, or None: links are shown to visitors and some are fetched."""
+    href = (href or '').strip()
+    url = BASE + href if href.startswith('/') and not href.startswith('//') else href
+    return url if url.startswith(BASE + '/') else None
+EVENT_PAGES = 12  # newest daily reports (about 2.5 weeks); events repeat across days as they update
 
 
 # ── Daily power status ────────────────────────────────────────────────────────
@@ -98,7 +102,7 @@ def parse_directory(markup: str) -> dict:
             'type': text(cells[2]),
             'operator': text(cells[4]),
             'location': location,
-            'url': BASE + href if href.startswith('/') else href,
+            'url': nrc_url(href),
         })
     if len(units) < 90:
         raise ValueError('Incomplete NRC reactor directory')
@@ -116,8 +120,8 @@ async def fetch_directory(client) -> dict:
 def parse_event_index(markup: str) -> list[str]:
     """Daily report URLs from a year index, newest first."""
     paths = re.findall(r'href="([^"]*/event-notification-reports/\d{4}/(\d{8})en)"', markup)
-    unique = {day: (BASE + path if path.startswith('/') else path) for path, day in paths}
-    return [unique[day] for day in sorted(unique, reverse=True)]
+    unique = {day: nrc_url(path) for path, day in paths}
+    return [unique[day] for day in sorted(unique, reverse=True) if unique[day]]
 
 
 def _field(block: str, label: str) -> str | None:
@@ -156,6 +160,20 @@ def _units(block: str) -> list[dict]:
     return rows
 
 
+# Reactor reports that rarely matter to the public: drug and alcohol testing, spurious signals.
+# Materials, medical and supplier reports (Agreement State, Hospital, Part 21) are left out too.
+MINOR_REACTOR = re.compile(r'fitness for duty|invalid', re.I)
+
+# Plant-system abbreviations that stay upper case when an all-caps heading is sentence-cased.
+ACRONYMS = {'AC', 'AFW', 'DC', 'ECCS', 'EDG', 'ESF', 'HPCI', 'HVAC', 'LOOP', 'MSIV', 'NRC', 'RCIC', 'RCS', 'RHR', 'RPS', 'SRV'}
+
+
+def sentence_case(text: str) -> str:
+    words = [w.upper() if w.strip('.,()').upper() in ACRONYMS else w.lower() for w in text.split()]
+    joined = ' '.join(words)
+    return joined[:1].upper() + joined[1:]
+
+
 # Narrative headlines repeat the category, e.g. "AGREEMENT STATE REPORT - STUCK SHUTTER".
 HEADLINE_PREFIX = re.compile(r'^(?:NON-)?(?:AGREEMENT STATE|PART 21)(?:\s+REPORT)?\s*[-–:]\s*')
 
@@ -185,7 +203,7 @@ def parse_events(markup: str, page_url: str) -> list[dict]:
         headline = text(narrative[1]) if narrative else ''
         headline = headline if headline and len(headline) <= 90 and headline.upper() == headline else ''
         headline = HEADLINE_PREFIX.sub('', headline)
-        description = (headline or cfr_desc or category).capitalize()
+        description = sentence_case(headline or cfr_desc or category)
         units = _units(block)
         unit_label = ''
         if units:
@@ -198,9 +216,11 @@ def parse_events(markup: str, page_url: str) -> list[dict]:
         if not published or not facility:
             continue
         tags = ['nrc-event']
-        if any(u['scram'] not in ('', 'N') for u in units):
+        scram = any(u['scram'] not in ('', 'N') for u in units)
+        declared = bool(emergency) and emergency.lower() != 'non emergency'
+        if scram:
             tags.append('scram')
-        if emergency and emergency.lower() != 'non emergency':
+        if declared:
             tags.append('emergency')
         items.append({
             'id': f'EN-{en}',
@@ -214,6 +234,7 @@ def parse_events(markup: str, page_url: str) -> list[dict]:
             'category': category or None,
             'facility': facility,
             'state': state,
+            'significant': scram or declared or (category == 'Power Reactor' and not MINOR_REACTOR.search(cfr_text)),
         })
     return items
 
@@ -251,12 +272,13 @@ async def fetch_events(client) -> dict:
     pages = [r for r in results if not isinstance(r, Exception)]
     if not pages:
         raise ValueError('All NRC event report pages failed')
-    items = merge_events(pages)
-    if not items:
+    events = merge_events(pages)
+    if not events:
         raise ValueError('NRC event reports contained no events')
+    # Freshness follows every report; the feed carries only reactor events, scrams and emergencies.
     return {
-        'observed_at': max(i['published'] for i in items),
-        'items': items,
+        'observed_at': max(i['published'] for i in events),
+        'items': [i for i in events if i['significant']],
         'pages': links,
         'source_url': EVENTS_URL,
     }

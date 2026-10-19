@@ -1,0 +1,44 @@
+[
+ {
+  "NoticeId": 20265254625903,
+  "EventTypeSeverity": 3,
+  "EventTypeColor": "#FEC007",
+  "Id": "f6af1d41-44bd-40f4-8e5e-f54e47e0124f",
+  "MessageID": "202652546259-03",
+  "MessageType": "End",
+  "MessageSubject": "ENDED: Restricted Maintenance Operations for CAISO Grid, effective 10/08/2026 10:00 - 10/08/2026 22:00",
+  "MessageBody": "ENDED: Restricted Maintenance Operations for CAISO Grid, effective 10/08/2026 10:00 - 10/08/2026 22:00 - 202652546259 \nNotice No: 202652546259-03\n\nAs of 10/08/2026 22:00 the California ISO has concluded the Restricted Maintenance Operations for CAISO Grid, effective 10/08/2026 10:00 through 10/08/2026 22:00.\n\nReason: The Restricted Maintenance Operations has concluded.\n\nFor more information, view the Emergency Notifications fact sheet (https://www.caiso.com/documents/emergency-notifications-fact-sheet.pdf).\n\nMonitor system conditions on Today's Outlook (https://www.caiso.com/todays-outlook) and contact local electric utilities for details about their respective load reduction programs. ",
+  "Disclaimer": "---------------------------------- DISCLAIMER --------------------------------------\nThis CAISO notice is based on the current conditions of the transmission grid system.While this CAISO notice reflec",
+  "MessagePostDatetime": "2026-10-08T22:00:00",
+  "EventId": "202652546259",
+  "EventType": "Restricted Maintenance Operations"
+ },
+ {
+  "NoticeId": 20265254625914,
+  "EventTypeSeverity": 3,
+  "EventTypeColor": "#FEC007",
+  "Id": "3b1c1783-bd42-4e5f-b117-ea4da1b6827c",
+  "MessageID": "202652546259-14",
+  "MessageType": "Initiation",
+  "MessageSubject": "Restricted Maintenance Operations declared for CAISO Grid, effective 10/08/2026 10:00 - 10/08/2026 22:00",
+  "MessageBody": "Restricted Maintenance Operations declared for CAISO Grid, effective 10/08/2026 10:00 - 10/08/2026 22:00 - 202652546259\nNotice No: 202652546259-14\n\nThe California ISO has declared Restricted Maintenance Operations for CAISO Grid, effective 10/08/2026 10:00 through 10/08/2026 22:00.\n\nReason: CAISO has declared an RMO for CAISO Grid due to the heat event expected to impact the entire BA. \n\n\nRestricted Maintenance Operations, as detailed in CAISO Operating Procedure 4420, will be in effect.\n\nMarket participants are cautioned to avoid actions, which may jeopardize generator and/or transmission availability.\n\n---------------------------\nPLANNED EVENTS\n---------------------------\nRestricted Maintenance Operations - CAISO Grid: 10/05/2026 10:00 - 10/05/2026 22:00\nRestricted Maintenance Operations - CAISO Grid: 10/06/2026 10:00 - 10/06/2026 22:00\nRestricted Maintenance Operations - CAISO Grid: 10/07/2026 10:00 - 10/07/2026 22:00\n\n\nFor more information, view the Emergency Notifications fact sheet (https://www.caiso.com/documents/emergency-notifications-fact-sheet.pdf).\n\nMonitor system conditions on Today's Outlook (https://www.caiso.com/todays-outlook) and contact local electric utilities for details about their respective load reduction programs. ",
+  "Disclaimer": "---------------------------------- DISCLAIMER --------------------------------------\nThis CAISO notice is based on the current conditions of the transmission grid system.While this CAISO notice reflec",
+  "MessagePostDatetime": "2026-10-02T11:42:45",
+  "EventId": "202652546259",
+  "EventType": "Restricted Maintenance Operations"
+ },
+ {
+  "NoticeId": 20268507593573,
+  "EventTypeSeverity": 1,
+  "EventTypeColor": "#4F5E63",
+  "Id": "3e7f2acc-c5ff-4688-9cad-0d81268440aa",
+  "MessageID": "202685075935-73",
+  "MessageType": "Initiation",
+  "MessageSubject": "CAISO Monthly notification system test - 202685075935",
+  "MessageBody": "CAISO Monthly notification system test - 202685075935\nNotice No: 202685075935-73\n\nThis is the monthly test of the California ISO emergency notification system. \n\nReason: This is only a test - no action required.\n\nFor more information, view the Emergency Notifications fact sheet (https://www.caiso.com/documents/emergency-notifications-fact-sheet.pdf).\n\nMonitor system conditions on Today's Outlook (https://www.caiso.com/todays-outlook) and contact local electric utilities for details about their respective load reduction programs. ",
+  "Disclaimer": "---------------------------------- DISCLAIMER --------------------------------------\nThis CAISO notice is based on the current conditions of the transmission grid system.While this CAISO notice reflec",
+  "MessagePostDatetime": "2026-08-01T09:38:07",
+  "EventId": "202685075935",
+  "EventType": "Test"
+ }
+]

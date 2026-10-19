@@ -1,0 +1,38 @@
+{
+ "articles": [
+  {
+   "name": "MISO delivered more than $7 billion in value in 2025",
+   "subheader": "Regional markets, planning and operations continue to provide substantial reliability and economic benefits",
+   "startPublish": "2026-09-29T13:10:29+00:00",
+   "linkURL": "/link/5e7d303845ab4e5497021f074c7597f0.aspx",
+   "pageTypeName": "NewsArticlePage"
+  },
+  {
+   "name": "MISO accelerates new generation and storage projects with fifth ERAS cycle",
+   "subheader": "7.3 GW of proposed capacity will strengthen reliability and meet growing demand",
+   "startPublish": "2026-09-08T14:29:58+00:00",
+   "linkURL": "/link/9a65a9ee991645168f4bc85038e00192.aspx",
+   "pageTypeName": "NewsArticlePage"
+  },
+  {
+   "name": "MISO’s Planning Resource Auction shows sufficient capacity for coming year",
+   "subheader": "Growing resource supply helps maintain grid reliability as demand continues to rise",
+   "startPublish": "2026-04-28T21:38:20+00:00",
+   "linkURL": "/link/1996c6b9328d4639af16dfd34620af06.aspx",
+   "pageTypeName": "NewsArticlePage"
+  },
+  {
+   "name": "MISO says power grid ready for winter, but stresses risks remain",
+   "subheader": "Grid operator to share seasonal assessment at annual workshop",
+   "startPublish": "2025-10-29T12:42:06+00:00",
+   "linkURL": "/link/e926ad23da1e4110980b426a2cd9cb05.aspx",
+   "pageTypeName": "NewsArticlePage"
+  }
+ ],
+ "yearList": [
+  2023,
+  2024,
+  2025,
+  2026
+ ]
+}

@@ -1,0 +1,36 @@
+{
+ "lastUpdated": "2026-10-19 02:40:53-0500",
+ "current_condition": {
+  "condition_note": "There is enough power for current demand.",
+  "eea_level": 0,
+  "energy_level_value": 20,
+  "state": "normal",
+  "title": "Normal Conditions",
+  "prc_value": "15,303",
+  "index": 965,
+  "datetime": 1792395653
+ },
+ "data": [
+  {
+   "timestamp": "2026-10-19 00:00:05-0500",
+   "epoch": 1792386005000,
+   "interval": "00:00:05",
+   "dstFlag": "N",
+   "prc": 12358
+  },
+  {
+   "timestamp": "2026-10-19 00:00:13-0500",
+   "epoch": 1792386013000,
+   "interval": "00:00:13",
+   "dstFlag": "N",
+   "prc": 12338
+  },
+  {
+   "timestamp": "2026-10-19 02:40:53-0500",
+   "epoch": 1792395653000,
+   "interval": "02:40:53",
+   "dstFlag": "N",
+   "prc": 15303
+  }
+ ]
+}

@@ -1,0 +1,68 @@
+{
+ "hasMorePages": true,
+ "totalMatching": 67,
+ "totalPages": 7,
+ "items": [
+  {
+   "date": "2026-10-15T19:11:27Z",
+   "dateDisplay": "October 15, 2026",
+   "category": "Headlines",
+   "allNewsTypes": [
+    "Headlines"
+   ],
+   "title": "FERC Approves 2027 Budgets for NERC and Regional Entities",
+   "description": "Today, at its monthly open meeting, the Federal Energy Regulatory Commission (FERC) approved the 2027 business plans and budgets for NERC and the Regional Entities, placing the ERO Enterprise in a strong position to address the most urgent reliability and security risks impacting the bulk power system.",
+   "url": "/newsroom/ferc-approves-2027-budgets-for-nerc-and-regional-entities",
+   "contentId": 49790
+  },
+  {
+   "date": "2026-10-15T12:32:26Z",
+   "dateDisplay": "October 15, 2026",
+   "category": "Headlines",
+   "allNewsTypes": [
+    "Headlines"
+   ],
+   "title": "NERC’s Computational Loads Standards Pass Final Ballot, Advance to Board Adoption",
+   "description": "NERC’s foundational Computational Loads Reliability Standards and their associated implementation plans have passed final ballot, marking a significant milestone in an accelerated effort to address emerging reliability risks associated with the rapid growth of large electrical loads, including data centers and artificial intelligence facilities. ",
+   "url": "/newsroom/nercs-computational-loads-standards-pass-final-ballot-advance-to-board-adoption",
+   "contentId": 49762
+  },
+  {
+   "date": "2026-10-14T14:25:56Z",
+   "dateDisplay": "October 14, 2026",
+   "category": "Headlines",
+   "allNewsTypes": [
+    "Headlines"
+   ],
+   "title": "NERC Examines International Blackouts to Strengthen North American Grid Reliability",
+   "description": "As electric grids worldwide undergo significant transformation, a new NERC white paper examines three major international blackouts and identifies critical lessons for strengthening the reliability and resilience of North America’s bulk power system. ",
+   "url": "/newsroom/nerc-examines-international-blackouts-to-strengthen-north-american-grid-reliability",
+   "contentId": 49730
+  },
+  {
+   "date": "2026-10-08T17:10:11Z",
+   "dateDisplay": "October 08, 2026",
+   "category": "Headlines",
+   "allNewsTypes": [
+    "Headlines"
+   ],
+   "title": "North American Collaboration, Large Loads Standards Key Topics at Board Meeting",
+   "description": "Large loads, standards, and the collaborative relationship between the United States and Canada were the focus on NERC’s first Board meeting in Toronto since 2015. ",
+   "url": "/newsroom/north-american-collaboration-large-loads-standards-key-topics-at-board-meeting",
+   "contentId": 49658
+  },
+  {
+   "date": "2026-08-18T11:21:39Z",
+   "dateDisplay": "August 18, 2026",
+   "category": "Headlines",
+   "allNewsTypes": [
+    "Headlines"
+   ],
+   "title": "Letter to CEOs Outlines Near-Term Actions on Large Loads and Standards Development Process",
+   "description": "NERC recently sent a letter to chief executive officers outlining near-term actions on two initiatives: computational loads and the standards development process.",
+   "url": "/newsroom/letter-to-ceos-outlines-near-term-actions-on-large-loads-and-standards-development-process",
+   "contentId": 48435
+  }
+ ],
+ "currentNewsType": "Headlines"
+}

@@ -20,10 +20,15 @@
 	1	</sy:updateFrequency>
 	
 	<item>
+		<title>Operations Update: PJM Issues Capacity Advisory for Oct. 19</title>
+		<link>https://insidelines.pjm.com/operations-update-pjm-issues-capacity-advisory-for-oct-19/</link>
+		<pubDate>Fri, 16 Oct 2026 18:29:16 +0000</pubDate>
+		<category><![CDATA[Operations]]></category>
+		<description><![CDATA[<img width="139" height="81" src="https://insidelines.pjm.com/wp-content/uploads/2019/07/control-room-1_1024x1024-139x81.jpg" class="webfeedsFeaturedVisual wp-post-image" alt="" />PJM has issued a Capacity Advisory for Monday, Oct. 19, ahead of expected tight system conditions due to equipment outages needed for maintenance and construction. The PJM load forecast is estimated at about 94,573 MW against expected generation outages of about 72,000 MW as well as planned transmission outages. A Capacity Advisory is a new [&#8230;]]]></description>
+	</item>
+	<item>
 		<title>PJM Reviews September Hot Weather Operations</title>
 		<link>https://insidelines.pjm.com/pjm-reviews-september-hot-weather-operations/</link>
-		
-		<dc:creator><![CDATA[Jeffrey Shields]]></dc:creator>
 		<pubDate>Mon, 12 Oct 2026 18:24:50 +0000</pubDate>
 				<category><![CDATA[Operations]]></category>
 		<guid isPermaLink="false">https://insidelines.pjm.com/?p=210293</guid>
@@ -37,8 +42,6 @@
 <item>
 		<title>PJM Issues Maximum Generation Alert for Oct. 13, Extends Capacity Advisory to Oct. 14</title>
 		<link>https://insidelines.pjm.com/pjm-extends-capacity-advisory-to-oct-14/</link>
-		
-		<dc:creator><![CDATA[Jeffrey Shields]]></dc:creator>
 		<pubDate>Mon, 12 Oct 2026 15:30:04 +0000</pubDate>
 				<category><![CDATA[News]]></category>
 		<category><![CDATA[Operations]]></category>
@@ -51,5 +54,12 @@
 		
 		
 			</item>
+	<item>
+		<title>PJM Introduces Default Dashboard to Data Viewer Tool</title>
+		<link>https://insidelines.pjm.com/pjm-introduces-default-dashboard-to-data-viewer-tool/</link>
+		<pubDate>Fri, 02 Oct 2026 13:55:27 +0000</pubDate>
+		<category><![CDATA[Markets]]></category>
+		<description><![CDATA[PJM has updated its Data Viewer tool to highlight commonly accessed information through a new default dashboard view. Data Viewer is PJM’s tool that allows users to view public operational and market data graphically. [&#8230;]]]></description>
+	</item>
 	</channel>
 </rss>
