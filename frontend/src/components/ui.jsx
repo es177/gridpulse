@@ -8,16 +8,18 @@ export function Board({ children }) {
   return <div className="board">{children}</div>
 }
 
-export function Tile({ label, tip, meta, span = 12, rows, flush, id, className = '', children }) {
+/** hint: one plain-language line, shown only in explain mode. */
+export function Tile({ label, hint, meta, span = 12, rows, flush, id, className = '', children }) {
   const cls = ['tile', span !== 12 && `s${span}`, rows && `r${rows}`, className].filter(Boolean).join(' ')
   return (
     <section className={cls} id={id}>
       {label && (
         <header className="tile-head">
-          <h2 className="tile-label" title={tip}>{label}</h2>
+          <h2 className="tile-label">{label}</h2>
           {meta && <div className="tile-meta">{meta}</div>}
         </header>
       )}
+      {hint && <p className="hint">{hint}</p>}
       <div className={flush ? 'tile-body flush' : 'tile-body'}>{children}</div>
     </section>
   )
@@ -28,15 +30,16 @@ export function Metrics({ children }) {
 }
 
 /** value: null while loading (skeleton), '—' when missing. */
-export function Metric({ label, value, unit, note, tip, tone }) {
+export function Metric({ label, value, unit, note, hint, tone }) {
   return (
     <div className="metric">
-      <div className="metric-label" title={tip}>{label}</div>
+      <div className="metric-label">{label}</div>
       <div className={tone ? `metric-value ${tone}` : 'metric-value'}>
         {value ?? <span className="skeleton" style={{ display: 'inline-block', width: 72, height: 20 }} />}
         {unit && value != null && value !== '—' && <small>{unit}</small>}
       </div>
       <div className="metric-note">{note || ' '}</div>
+      {hint && <p className="hint">{hint}</p>}
     </div>
   )
 }

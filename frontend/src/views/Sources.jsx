@@ -53,7 +53,7 @@ export default function Sources() {
     <>
       {failed > 0 && <Banner>{failed}/{resources.length} requests failed · showing last status</Banner>}
       <Board>
-        <Tile flush label="Sources" meta={<span title="Status is computed in your browser from each source's newest observation">{names.length}</span>}>
+        <Tile flush label="Sources" meta={<span>{names.length}</span>} hint="Every number on this site comes from these public sources. Green is current, amber is late or retrying, red is unavailable; the site keeps showing the last good data.">
           {!names.length ? <Skeleton height={320} /> : (
             <div className="table-wrap">
               <table>

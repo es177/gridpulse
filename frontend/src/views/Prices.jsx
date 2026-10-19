@@ -19,7 +19,7 @@ function UsTrend({ history, sector }) {
     }
   }, [history, sector])
   return (
-    <Tile span={4} label={<>US average · <b>{SECTOR_LABEL[sector]}</b></>}>
+    <Tile span={4} label={<>US average · <b>{SECTOR_LABEL[sector]}</b></>} hint="The US average price by month.">
       <div className="stick">
         {x.length >= 2
           ? <TimeChart x={x} series={series} area height={180} format={centsFormat} ariaLabel="US average retail price by month" />
@@ -60,19 +60,19 @@ export default function Prices() {
         <Metrics>
           {SECTORS.map(([key, label]) => (
             <Metric key={key} label={label} value={us ? num(us[key], 2) : data === null ? '—' : null} unit="¢/kWh"
-              note={us && `${signed(us[`${key}_yoy`], 1, '%')} y/y`} />
+              note={us && `${signed(us[`${key}_yoy`], 1, '%')} vs last year`} hint={key === 'res' ? 'US average price per kilowatt-hour for homes. A typical home uses about 900 kWh a month.' : undefined} />
           ))}
         </Metrics>
         <Tile span={8} flush label={<>By state · <b>{SECTOR_LABEL[sector]}</b>{data ? ` · ${month(data.period)}` : ''}</>}
           meta={<SourceTag meta={res.data?.sources?.eia_prices} name="EIA" />}
-          tip="Average revenue per kWh sold. Monthly, about three months behind. Not a tariff or wholesale price.">
+          hint="Average price paid per kilowatt-hour, from EIA's monthly survey, about three months behind. Not the rate on any specific plan.">
           {!data ? <Skeleton height={320} /> : (
             <div className="table-wrap">
               <table>
                 <thead><tr>
                   <Th k="name" sort={sort} onSort={toggle}>State</Th>
                   <Th k="price" sort={sort} onSort={toggle} num>Price <U>¢/kWh</U></Th>
-                  <Th k="yoy" sort={sort} onSort={toggle} num>y/y</Th>
+                  <Th k="yoy" sort={sort} onSort={toggle} num>vs last year</Th>
                   <Th k="diff" sort={sort} onSort={toggle} num className="hide-sm">vs US <U>¢</U></Th>
                 </tr></thead>
                 <tbody>

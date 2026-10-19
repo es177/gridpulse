@@ -1,10 +1,11 @@
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useRoute, navigate } from './lib/router'
 import { EVERY, reloadAll, useActivity, useResource, useSources } from './lib/api'
 import { useNow } from './lib/hooks'
 import { sourceState } from './lib/status'
 import { age, zone } from './lib/format'
 import { Icon } from './components/ui'
+import { applyExplain, initialExplain } from './lib/explain'
 import Overview from './views/Overview'
 import Grid from './views/Grid'
 import Live from './views/Live'
@@ -61,6 +62,7 @@ function Help({ onClose }) {
         <header className="tile-head"><h2 className="tile-label">Keys</h2><div className="tile-meta"><button className="btn bare" onClick={onClose}>esc</button></div></header>
         <div className="keys">
           {ROUTES.map(r => <Fragment key={r.path}><span><kbd>g</kbd> <kbd>{r.key}</kbd></span><span>{r.label}</span></Fragment>)}
+          <span><kbd>e</kbd></span><span>Explain</span>
           <span><kbd>/</kbd></span><span>Search</span>
           <span><kbd>r</kbd></span><span>Refresh</span>
           <span><kbd>?</kbd></span><span>Keys</span>
@@ -70,7 +72,7 @@ function Help({ onClose }) {
   )
 }
 
-function useShortcuts(setHelp) {
+function useShortcuts(setHelp, toggleExplain) {
   const pending = useRef(0)
   useEffect(() => {
     const onKey = e => {
@@ -87,17 +89,21 @@ function useShortcuts(setHelp) {
       if (e.key === 'g') pending.current = Date.now()
       else if (e.key === '/') { const el = document.querySelector('[data-search]'); if (el) { e.preventDefault(); el.focus(); el.select?.() } }
       else if (e.key === 'r') reloadAll()
+      else if (e.key === 'e') toggleExplain()
       else if (e.key === '?') setHelp(h => !h)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [setHelp])
+  }, [setHelp, toggleExplain])
 }
 
 export default function App() {
   const { path } = useRoute()
   const [help, setHelp] = useState(false)
-  useShortcuts(setHelp)
+  const [explain, setExplain] = useState(initialExplain)
+  useLayoutEffect(() => applyExplain(explain), [explain])
+  const toggleExplain = useCallback(() => setExplain(on => !on), [])
+  useShortcuts(setHelp, toggleExplain)
   const route = ROUTES.find(r => r.path === path) || ROUTES[0]
   useEffect(() => { document.title = route.path === '/' ? 'GridPulse' : `${route.label} · GridPulse` }, [route])
   const { View } = route
@@ -123,6 +129,7 @@ export default function App() {
           <div className="tools">
             <Health />
             <Refresh />
+            <button className="btn" type="button" aria-pressed={explain} onClick={toggleExplain} title="Plain-language notes (e)">explain</button>
             <button className="btn bare hide-sm" type="button" onClick={() => setHelp(true)} title="Keys (?)">?</button>
           </div>
         </div>

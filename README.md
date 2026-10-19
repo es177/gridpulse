@@ -22,7 +22,7 @@ A live console for the US electricity grid and nuclear fleet, built only on free
 | World | Nuclear fleet by country | World Nuclear Association | Monthly |
 | Sources | Status of every source, computed in the browser | — | — |
 
-Every number carries the time its source observed it. Filters live in the URL, so any view can be shared. Keyboard: `g` then a letter switches pages (`g o`, `g r`, …), `/` focuses search, `r` refreshes, `?` lists shortcuts.
+Every number carries the time its source observed it. New to grid data? Switch on **explain** (or press `e`) for a plain-language line under every figure. Filters live in the URL, so any view can be shared. Keyboard: `g` then a letter switches pages (`g o`, `g r`, …), `/` focuses search, `r` refreshes, `?` lists shortcuts.
 
 | Grid | Live | Reactors |
 |---|---|---|

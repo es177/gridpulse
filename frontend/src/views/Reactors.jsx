@@ -46,7 +46,7 @@ function UnitTable({ rows, dates, openUnit, onToggle }) {
       <table>
         <thead><tr>
           <Th k="name" sort={sort} onSort={toggle}>Unit</Th>
-          <Th k="state" sort={sort} onSort={toggle}>St</Th>
+          <Th k="state" sort={sort} onSort={toggle}>State</Th>
           <Th k="type" sort={sort} onSort={toggle} className="hide-sm">Type</Th>
           <Th k="operator" sort={sort} onSort={toggle} className="hide-sm">Operator</Th>
           <Th k="today" sort={sort} onSort={toggle}>Power <U>%</U></Th>
@@ -119,7 +119,7 @@ export default function Reactors() {
       <LoadState res={res} what="reactors" />
       <div className="bar">
         <input className="input" type="search" data-search value={q} onChange={e => setQ(e.target.value)}
-          placeholder="filter unit, state, operator, docket" aria-label="Filter reactors" />
+          placeholder="filter reactors" aria-label="Filter reactors" />
         <Seg label="Power status" value={status} onChange={s => setParam('status', s === 'all' ? null : s)} options={[
           ['all', 'all', searched.length], ['full', 'full', tally('full')], ['reduced', 'reduced', tally('reduced')], ['offline', 'offline', tally('offline')],
         ]} />
@@ -128,21 +128,25 @@ export default function Reactors() {
       </div>
       <Board>
         <Metrics>
-          <Metric label="Units" value={fleet ? num(fleet.units) : null} note={data && `NRC ${date(data.report_date)}`} />
-          <Metric label="Full" value={fleet ? num(fleet.full) : null} note="≥ 95%" />
-          <Metric label="Reduced" value={fleet ? num(fleet.reduced) : null} note="1–94%" tone={fleet?.reduced ? 'warn' : ''} />
-          <Metric label="Offline" value={fleet ? num(fleet.offline) : null} note="0%" tone={fleet?.offline ? 'bad' : ''} />
-          <Metric label="Output" value={fleet ? gw(fleet.online_mw) : null} unit={fleet && `/ ${gw(fleet.capacity_mw)} GW`} note="est." tip="Reported % power × nameplate MWe" />
-          <Metric label="Changed" value={fleet ? num(fleet.changed) : null} note="vs prior report" />
+          <Metric label="Reactors" value={fleet ? num(fleet.units) : null} note={data && `NRC ${date(data.report_date)}`}
+            hint="Operating US power reactors in the regulator's daily report, published each business day." />
+          <Metric label="Full power" value={fleet ? num(fleet.full) : null} note="95% or more" hint="Running at or near full licensed power." />
+          <Metric label="Reduced" value={fleet ? num(fleet.reduced) : null} note="1–94%" tone={fleet?.reduced ? 'warn' : ''}
+            hint="Running below full power, often while starting up, shutting down or for maintenance." />
+          <Metric label="Offline" value={fleet ? num(fleet.offline) : null} note="0%" tone={fleet?.offline ? 'bad' : ''}
+            hint="Not producing power, usually for refueling every 18–24 months." />
+          <Metric label="Output" value={fleet ? gw(fleet.online_mw) : null} unit={fleet && `/ ${gw(fleet.capacity_mw)} GW`} note="estimated"
+            hint="Reported percent power times each reactor's rated capacity, summed." />
+          <Metric label="Changed" value={fleet ? num(fleet.changed) : null} note="since last report" hint="Reactors whose reported power changed since the previous report." />
         </Metrics>
         {view === 'map' ? (
-          <Tile flush label="Map" meta={meta}>
+          <Tile flush label="Map" meta={meta} hint="Each dot is a reactor, sized by capacity. Green is full power, amber reduced, red offline. Click a dot for details.">
             <Suspense fallback={<Skeleton height={420} />}>
               <ReactorMap units={shown} selected={openUnit} onSelect={name => setParam('unit', name)} onOpen={openInTable} />
             </Suspense>
           </Tile>
         ) : (
-          <Tile flush label="Units" meta={meta} tip="Percent of licensed thermal power reported each morning. Δ: change in points since the previous report.">
+          <Tile flush label="Reactors" meta={meta} hint="Power is the percent of full licensed power reported each morning. Δ is the change since the previous report; Since is when the current level began. Click a row for a year of history.">
             {!data ? <Skeleton height={320} />
               : shown.length ? <UnitTable rows={shown} dates={dates} openUnit={openUnit} onToggle={toggleUnit} />
                 : <Empty>no match · <button className="btn bare" type="button" onClick={() => { setQ(''); setParam('status', null) }}>clear</button></Empty>}

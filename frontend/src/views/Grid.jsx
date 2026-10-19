@@ -26,8 +26,8 @@ function DemandTile({ region, meta }) {
     }
   }, [region, partial])
   return (
-    <Tile label={<>Demand · <b>{regionLabel(region)}</b> · 72h</>} meta={<SourceTag meta={meta} name="EIA-930" />}
-      tip={`Hourly averages. Net generation arrives about a day after demand.${partial ? ' No Lower 48 forecast: it omits areas that have not reported.' : ''}`}>
+    <Tile label={<>Demand · <b>{regionLabel(region)}</b> · 3 days</>} meta={<SourceTag meta={meta} name="EIA-930" />}
+      hint={`Demand is electricity used; net generation is electricity produced inside the region, published about a day later. The gap is traded with neighbors.${partial ? ' No US forecast is drawn because it leaves out areas that have not reported.' : ' The dashed line is the day-ahead forecast.'}`}>
       <LineLegend items={[['Demand', 'var(--fg)'], ...(partial ? [] : [['Forecast', 'var(--fg-2)', true]]), ['Net generation', 'var(--fg-3)']]} />
       <TimeChart x={x} series={series} height={280} format={gwTip} axisFormat={gwAxis} ariaLabel={`${region.name} hourly demand${partial ? '' : ', forecast'} and net generation`} />
     </Tile>
@@ -40,7 +40,7 @@ function ImportsTile({ region }) {
     return { any: pts.length > 0, x: pts.map(p => Date.parse(p.t)), series: [{ label: 'Net imports', values: pts.map(p => -p.ti) }] }
   }, [region])
   return (
-    <Tile span={6} label={<>Net imports · <b>{regionLabel(region)}</b></>} tip="Positive: drawing from neighbors. Negative: exporting. EIA total interchange, sign reversed.">
+    <Tile span={6} label={<>Net imports · <b>{regionLabel(region)}</b></>} hint="Above zero the region buys power from its neighbors; below zero it sells to them.">
       {any ? <TimeChart x={x} series={series} area height={160} format={gwSigned} ariaLabel={`${region.name} hourly net imports`} />
         : <Empty>no interchange reported</Empty>}
     </Tile>
@@ -49,8 +49,8 @@ function ImportsTile({ region }) {
 
 function ReferenceTile() {
   return (
-    <Tile span={6} flush label="Reference" tip={reference.note}
-      meta={<span title="Copied from published reports; not refreshed automatically">static · {reference.reviewed}</span>}>
+    <Tile span={6} flush label="Reference" hint="Fixed figures from published reports for context. They do not update automatically; hover a row for detail."
+      meta={<span>static · {reference.reviewed}</span>}>
       <div className="table-wrap">
         <table>
           <tbody>
@@ -80,8 +80,8 @@ function FuelTile({ fuel, meta }) {
   }, [fuel])
   const latest = fuel?.series?.at(-1)
   return (
-    <Tile label="Generation by fuel · US48" meta={<SourceTag meta={meta} name="EIA-930" />}
-      tip="EIA publishes generation by fuel about a day after the hour. Storage charging is not stacked.">
+    <Tile label="US generation by fuel" meta={<SourceTag meta={meta} name="EIA-930" />}
+      hint="Where US electricity comes from, hour by hour, about a day behind. Solar rises at midday; gas usually covers the evening peak.">
       {latest ? <>
         <TimeChart x={x} series={series} stacked height={240} format={gwAxis} ariaLabel="US Lower 48 hourly generation by fuel" />
         <div className="legend"><span>GW at {when(latest.t)}</span></div>
@@ -119,13 +119,16 @@ export default function Grid() {
       <Board>
         {row ? <>
           <Metrics>
-            <Metric label="Demand" value={gw(row.d)} unit="GW" note={time(row.t)} />
-            <Metric label="Forecast" value={us48 ? '—' : gw(row.df)} unit="GW" tip={us48 ? 'Not summed for Lower 48' : 'Day-ahead forecast for the same hour'}
-              note={us48 ? 'n/a' : row.err == null ? '—' : `actual ${signed(row.err, 1, '%')}`} />
-            <Metric label="Next hour" value={us48 || row.next == null ? '—' : gw(row.next)} unit="GW" note={us48 ? 'n/a' : row.next == null ? 'not published' : 'day-ahead'} />
-            <Metric label="24h range" value={`${gw(row.min, 0)}–${gw(row.peak, 0)}`} unit="GW" note={row.peakT && `peak ${time(row.peakT)}`} />
+            <Metric label="Demand" value={gw(row.d)} unit="GW" note={time(row.t)} hint="Electricity used in the latest reported hour." />
+            <Metric label="Forecast" value={us48 ? '—' : gw(row.df)} unit="GW"
+              note={us48 ? 'not available' : row.err == null ? '—' : `actual ${signed(row.err, 1, '%')}`}
+              hint={us48 ? 'Not shown for the whole US: the total leaves out areas that have not reported.' : 'What the operator predicted a day ahead for the same hour.'} />
+            <Metric label="Next hour" value={us48 || row.next == null ? '—' : gw(row.next)} unit="GW" note={us48 ? 'not available' : row.next == null ? 'not published' : 'forecast'}
+              hint="The day-ahead forecast for the coming hour." />
+            <Metric label="24h range" value={`${gw(row.min, 0)}–${gw(row.peak, 0)}`} unit="GW" note={row.peakT && `peak ${time(row.peakT)}`}
+              hint="Lowest and highest hourly demand over the past day." />
             <Metric label="Net imports" value={row.imports == null ? '—' : signed(row.imports / 1000, 1)} unit="GW"
-              note={row.balanceT ? when(row.balanceT) : 'not reported'} tip="Arrives about a day after demand" />
+              note={row.balanceT ? when(row.balanceT) : 'not reported'} hint="Power bought from neighbors (+) or sold to them (−). Published about a day after demand." />
           </Metrics>
           <DemandTile region={region} meta={sources.eia_grid} />
           <ImportsTile region={region} />

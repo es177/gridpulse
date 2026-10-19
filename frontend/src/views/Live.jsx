@@ -10,13 +10,14 @@ import { Board, Tile, SourceTag, MixBar, FuelLegend, Tag, Empty, Skeleton, LoadS
 
 const gwFormat = v => `${num(v / 1000, 1)} GW`
 const STALE_MS = 30 * 60_000
+// What each operator's "load" figure covers, in plain words.
 const LOAD_MEANS = {
-  caiso: 'Current demand',
-  ercot: 'System demand',
-  spp: 'Actual load',
-  miso: 'Total load',
-  nyiso: 'Sum of 11 zone loads',
-  isone: 'Metered system load, excluding behind-the-meter solar',
+  caiso: 'Load is current demand across most of California.',
+  ercot: 'Load is system demand for most of Texas.',
+  spp: 'Load is actual load across the central US.',
+  miso: 'Load is total load across the Midwest and parts of the South.',
+  nyiso: 'Load is the sum of New York\'s 11 zones.',
+  isone: 'Load is metered demand for the six New England states; rooftop solar is not included.',
 }
 
 const isStale = (iso, now) => !iso || now - Date.parse(iso) > STALE_MS
@@ -37,12 +38,12 @@ function focusIso(key) {
 function SummaryTile({ isos, sources }) {
   const now = useNow()
   return (
-    <Tile flush label="Operators · 5 min">
+    <Tile flush label="Grid operators · live" hint="Six regional grid operators report every 5 minutes. The bar shows where each one's electricity comes from right now; click a row for its chart.">
       <div className="table-wrap">
         <table>
           <thead><tr>
             <th>ISO</th><th className="num">Load <U>GW</U></th><th style={{ width: '32%' }}>Mix</th><th className="num">Renew.</th>
-            <th className="num hide-sm">Net imp. <U>GW</U></th><th className="num hide-sm">Price <U>$/MWh</U></th><th className="num">Time</th>
+            <th className="num hide-sm">Imports <U>GW</U></th><th className="num hide-sm">Price <U>$/MWh</U></th><th className="num">Time</th>
           </tr></thead>
           <tbody>
             {isos.map(iso => {
@@ -90,19 +91,18 @@ function IsoTile({ iso, meta }) {
   const chart = useIsoChart(iso.series)
   const label = <>{iso.iso} <span className="u">· {iso.name}</span></>
   return (
-    <Tile span={6} id={iso.key} label={label} meta={<>{isStale(iso.observed_at, now) && <Tag tone="warn">delayed</Tag>}<SourceTag meta={meta} showLabel={false} /><span>{time(iso.observed_at)}</span></>}>
+    <Tile span={6} id={iso.key} label={label} hint={`${LOAD_MEANS[iso.key] || ''} ${chart.mode === 'mix' ? 'The chart stacks each fuel\'s output since local midnight.' : 'This operator publishes only its latest mix, so the chart shows load.'}`} meta={<>{isStale(iso.observed_at, now) && <Tag tone="warn">delayed</Tag>}<SourceTag meta={meta} showLabel={false} /><span>{time(iso.observed_at)}</span></>}>
       {!iso.mix && !iso.series?.length ? <Empty>no data</Empty> : <>
         <div className="kv">
-          <div title={LOAD_MEANS[iso.key]}><span className="label">Load</span><b>{gw(iso.load_mw)}<small>GW</small></b></div>
+          <div><span className="label">Load</span><b>{gw(iso.load_mw)}<small>GW</small></b></div>
           <div><span className="label">Renew.</span><b>{pct(s?.renewable)}</b></div>
-          <div><span className="label">Top</span><b>{s ? FUEL_LABEL[s.top] : '—'}</b></div>
+          <div><span className="label">Largest</span><b>{s ? FUEL_LABEL[s.top] : '—'}</b></div>
           {iso.price && <div title={iso.price.label}><span className="label">Price</span><b>{num(iso.price.usd_mwh, 2)}<small>$/MWh</small></b></div>}
         </div>
         {chart.x.length >= 2
           ? <TimeChart x={chart.x} series={chart.series} stacked={chart.mode === 'mix'} area={chart.mode === 'load'} height={170} format={gwFormat}
               ariaLabel={`${iso.iso} ${chart.mode === 'mix' ? 'generation by fuel' : 'load'} today`} />
           : <Empty>too few intervals today</Empty>}
-        {chart.mode === 'load' && <div className="legend"><span>load · mix history not published</span></div>}
         {iso.mix && <FuelLegend mix={iso.mix} />}
       </>}
     </Tile>

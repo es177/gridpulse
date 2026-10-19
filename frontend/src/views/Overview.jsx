@@ -20,16 +20,21 @@ function Summary({ us, grid, live, fuel, reactors }) {
   const fleet = reactors?.fleet
   return (
     <Metrics>
-      <Metric label="US48 demand" value={us ? gw(us.d) : grid ? '—' : null} unit="GW"
-        note={us && `${time(us.t)} · peak ${gw(us.peak, 0)}`} tip="Lower 48 hourly demand, EIA-930" />
-      <Metric label="ISO load" value={totals.load != null ? gw(totals.load) : live.data ? '—' : null} unit="GW"
-        note={`${totals.count}/${isos.length || 6} live`} tip="Sum of the six operators reporting in the last 30 minutes" />
+      <Metric label="US demand" value={us ? gw(us.d) : grid ? '—' : null} unit="GW"
+        note={us && `${time(us.t)} · peak ${gw(us.peak, 0)}`}
+        hint="Electricity in use across the lower 48 states, hourly. 1 GW is roughly one large power plant." />
+      <Metric label="Live load" value={totals.load != null ? gw(totals.load) : live.data ? '—' : null} unit="GW"
+        note={`${totals.count}/${isos.length || 6} grid operators`}
+        hint="Demand reported every 5 minutes by six grid operators that cover about half the country." />
       <Metric label="Renewables" value={totals.summary ? num(totals.summary.renewable, 1) : live.data ? '—' : null} unit="%"
-        note="live ISOs" tip="Hydro, wind and solar share of live operator output" />
-      <Metric label="Reactors full" value={fleet?.units ? `${fleet.full}/${fleet.units}` : reactors ? '—' : null}
-        note={fleet && `NRC ${date(reactors.report_date)}`} tip="Units at 95% power or more in the latest NRC report" />
+        note="hydro · wind · solar"
+        hint="Share of those operators' electricity coming from hydro, wind and solar right now." />
+      <Metric label="Reactors at full power" value={fleet?.units ? `${fleet.full}/${fleet.units}` : reactors ? '—' : null}
+        note={fleet && `NRC ${date(reactors.report_date)}`}
+        hint="US nuclear units at 95% power or more in the regulator's daily report. Some are always down for refueling." />
       <Metric label="Nuclear share" value={nuclear != null ? num(nuclear, 1) : fuel === null ? '—' : null} unit="%"
-        note={latestFuel && `US48 · ${when(latestFuel.t)}`} tip="EIA publishes generation by fuel about a day after the hour" />
+        note={latestFuel && when(latestFuel.t)}
+        hint="Nuclear's share of all US generation in the latest hour EIA has published, about a day behind." />
     </Metrics>
   )
 }
@@ -41,7 +46,8 @@ function DemandChart({ region, meta, loaded }) {
     return { x: pts.map(p => Date.parse(p.t)), series: [{ label: 'Demand', values: pts.map(p => p.d) }] }
   }, [region])
   return (
-    <Tile span={8} label="Demand · US48 · 72h" meta={<SourceTag meta={meta} name="EIA-930" />}>
+    <Tile span={8} label="US demand · 3 days" meta={<SourceTag meta={meta} name="EIA-930" />}
+      hint="Hourly electricity use. The daily wave follows people waking, working and sleeping; peaks come late in the day.">
       {region ? <TimeChart x={x} series={series} area height={248} format={gwTip} axisFormat={gwFormat} ariaLabel="US Lower 48 hourly electricity demand" />
         : loaded ? <Empty>no data · retrying</Empty> : <div className="skeleton" style={{ height: 248 }} />}
     </Tile>
@@ -53,7 +59,8 @@ function ReactorChanges({ res }) {
   const changes = reactorChanges(data?.units)
   const fleet = data?.fleet
   return (
-    <Tile span={4} flush label="Reactor changes" meta={<SourceTag meta={data?.sources?.nrc_status} name="NRC" />}>
+    <Tile span={4} flush label="Reactor changes" meta={<SourceTag meta={data?.sources?.nrc_status} name="NRC" />}
+      hint="Reactors whose power changed since the previous daily report, in percent of full power. Big drops are usually refueling or a shutdown.">
       {!data ? <Skeleton height={220} /> : (
         <ul className="rows">
           {changes.slice(0, 7).map(u => (
@@ -79,12 +86,13 @@ function ReactorChanges({ res }) {
 
 function Regions({ rows, meta }) {
   return (
-    <Tile span={8} flush label="Regions" meta={<SourceTag meta={meta} name="EIA-930" />}>
+    <Tile span={8} flush label="Regions" meta={<SourceTag meta={meta} name="EIA-930" />}
+      hint="Demand by grid region. vs forecast compares actual use with the operator's day-ahead prediction for that hour.">
       <div className="table-wrap">
         <table>
           <thead><tr>
             <th>Region</th><th className="num">Demand <U>GW</U></th>
-            <th className="num" title="Actual vs day-ahead forecast for the same hour">vs fcst</th>
+            <th className="num">vs forecast</th>
             <th className="num hide-sm">24h peak</th><th className="hide-sm">72h</th><th className="num">Hour</th>
           </tr></thead>
           <tbody>
@@ -109,7 +117,7 @@ function Latest({ res }) {
   const now = useNow()
   const items = res.data?.items || []
   return (
-    <Tile span={4} rows={2} flush label="Latest" meta={<a href="#/feed">feed →</a>}>
+    <Tile span={4} rows={2} flush label="Latest" meta={<a href="#/feed">feed →</a>} hint="Newest news and regulator notices.">
       {!res.data ? <Skeleton height={320} /> : items.length ? (
         <ul className="rows news">
           {items.slice(0, 9).map(i => (
@@ -127,12 +135,13 @@ function Latest({ res }) {
 function LiveIsos({ isos, sources }) {
   const now = useNow()
   return (
-    <Tile span={8} flush label="ISOs · 5 min" meta={<a href="#/live">live →</a>}>
+    <Tile span={8} flush label="Grid operators · live" meta={<a href="#/live">live →</a>}
+      hint="Each operator runs the grid for its region. The bar shows where its electricity comes from right now.">
       <div className="table-wrap">
         <table>
           <thead><tr>
             <th>ISO</th><th className="num">Load <U>GW</U></th><th style={{ width: '34%' }}>Mix</th>
-            <th className="num hide-sm">Renew.</th><th className="hide-sm">Top</th><th className="num">Time</th>
+            <th className="num hide-sm">Renew.</th><th className="hide-sm">Largest</th><th className="num">Time</th>
           </tr></thead>
           <tbody>
             {isos.map(i => {

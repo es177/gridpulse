@@ -43,13 +43,13 @@ export default function World() {
       </div>
       <Board>
         <Metrics>
-          <Metric label="Operable" value={world ? num(world.operable) : missing} note={world && `${gw(world.operable_mwe, 0)} GWe net`} tip="Includes units not currently generating" />
+          <Metric label="Operable" value={world ? num(world.operable) : missing} note={world && `${gw(world.operable_mwe, 0)} GWe net`} hint="Reactors able to run, including some not producing right now." />
           <Metric label="Building" value={world ? num(world.construction) : missing} note={world && `${gw(world.construction_mwe, 0)} GWe gross`} />
           <Metric label="Planned" value={world ? num(world.planned) : missing} note={world && `${gw(world.planned_mwe, 0)} GWe gross`} />
-          <Metric label="Countries" value={data ? num(operating) : null} note={data && `of ${countries.length} listed`} tip="Countries with operable units" />
+          <Metric label="Countries" value={data ? num(operating) : null} note={data && `of ${countries.length} listed`} hint="Countries with at least one operable reactor." />
         </Metrics>
         <Tile flush label={<>By country{data ? ` · table ${date(data.updated, true)}` : ''}</>} meta={<SourceTag meta={res.data?.sources?.wna} name="WNA" />}
-          tip="World Nuclear Association. Operable capacity is net; construction and planned capacity are gross.">
+          hint="Nuclear power by country from the World Nuclear Association. Share is nuclear's part of that country's electricity.">
           {!data ? <Skeleton height={320} /> : (
             <div className="table-wrap">
               <table>
