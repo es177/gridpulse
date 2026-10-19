@@ -97,7 +97,8 @@ export default function Grid() {
   const regions = res.data?.demand?.regions
   const rows = useMemo(() => regionRows(regions || []), [regions])
   const id = params.get('r') || 'US48'
-  const region = regions?.find(r => r.id === id) || regions?.[0]
+  // Accept EIA codes (CISO) and operator names (caiso) in the URL.
+  const region = regions?.find(r => r.id === id || r.name.toLowerCase() === id.toLowerCase()) || regions?.[0]
   const row = rows.find(r => r.id === region?.id)
   const sources = res.data?.sources || {}
   const us48 = row?.id === 'US48'
