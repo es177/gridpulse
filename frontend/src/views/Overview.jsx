@@ -48,7 +48,7 @@ function DemandChart({ region, meta, loaded }) {
   }, [region])
   return (
     <Tile span={8} label="US demand · 3 days" meta={<SourceTag meta={meta} name="EIA-930" />}
-      hint="Hourly electricity use. The daily wave follows people waking, working and sleeping; peaks come late in the day.">
+      hint="Hourly electricity use. Demand is lowest overnight and highest in the late afternoon or evening.">
       {region ? <TimeChart x={x} series={series} area height={248} format={gwTip} axisFormat={gwFormat} ariaLabel="US Lower 48 hourly electricity demand" />
         : loaded ? <Empty>no data · retrying</Empty> : <div className="skeleton" style={{ height: 248 }} />}
     </Tile>

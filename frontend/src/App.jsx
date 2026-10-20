@@ -147,7 +147,8 @@ export default function App() {
       </header>
       <main><Boundary key={route.path}><View /></Boundary></main>
       <footer>
-        <a href="#/sources">EIA · NRC · CAISO · ERCOT · SPP · MISO · NYISO · ISO-NE · WNA</a>
+        <a href="#/sources">EIA · NRC · CAISO · ERCOT · SPP · MISO · NYISO · ISO-NE · WNA · OWID</a>
+        <a href="#/sources">method · data API →</a>
         <span>{zone()}</span>
       </footer>
       {help && <Help onClose={() => setHelp(false)} />}

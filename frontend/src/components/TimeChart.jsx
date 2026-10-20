@@ -52,7 +52,8 @@ export default function TimeChart({ x, series, height = 220, stacked = false, ar
     let plotted = series.map(s => s.values.map(v => (typeof v === 'number' ? v : null)))
     if (stacked) {
       const acc = new Array(xs.length).fill(0)
-      plotted = plotted.map(values => values.map((v, i) => (acc[i] += Math.max(v ?? 0, 0))))
+      const known = xs.map((_, i) => plotted.some(values => values[i] !== null))  // all missing: a gap, not zero
+      plotted = plotted.map(values => values.map((v, i) => (known[i] ? (acc[i] += Math.max(v ?? 0, 0)) : null)))
     }
     const tip = document.createElement('div')
     tip.className = 'tip'

@@ -6,7 +6,7 @@ import { gw, num, pct, time } from '../lib/format'
 import { isLive, mixSummary } from '../lib/derive'
 import { FUELS, FUEL_LABEL, displayMix } from '../lib/fuels'
 import TimeChart from '../components/TimeChart'
-import { Board, Tile, SourceTag, FuelLegend, Tag, Empty, Skeleton, LoadState } from '../components/ui'
+import { Board, Tile, SourceTag, FuelLegend, MixBar, Tag, Empty, Skeleton, LoadState } from '../components/ui'
 import IsoTable from '../components/IsoTable'
 
 const gwFormat = v => `${num(v / 1000, 1)} GW`
@@ -44,18 +44,20 @@ function SummaryTile({ isos, sources }) {
 function useIsoChart(series) {
   return useMemo(() => {
     const points = series || []
-    const withMix = points.filter(p => p.mix && Object.keys(p.mix).length)
-    if (withMix.length >= 2) {
-      const mixes = withMix.map(p => displayMix(p.mix))
-      const fuels = FUELS.filter(f => mixes.some(m => (m[f] || 0) > 0))
+    const hasMix = p => p.mix && Object.keys(p.mix).length > 0
+    // Every interval stays on the axis; a missing reading is a gap, never a line drawn across it.
+    if (points.filter(hasMix).length >= 2) {
+      const span = points.slice(points.findIndex(hasMix))
+      const mixes = span.map(p => (hasMix(p) ? displayMix(p.mix) : null))
+      const fuels = FUELS.filter(f => mixes.some(m => (m?.[f] || 0) > 0))
       return {
         mode: 'mix',
-        x: withMix.map(p => Date.parse(p.t)),
-        series: fuels.map(f => ({ label: FUEL_LABEL[f], values: mixes.map(m => m[f] ?? null), color: `var(--fuel-${f})` })),
+        x: span.map(p => Date.parse(p.t)),
+        series: fuels.map(f => ({ label: FUEL_LABEL[f], values: mixes.map(m => (m ? m[f] ?? 0 : null)), color: `var(--fuel-${f})` })),
       }
     }
-    const loads = points.filter(p => typeof p.load_mw === 'number')
-    return { mode: 'load', x: loads.map(p => Date.parse(p.t)), series: [{ label: 'Load', values: loads.map(p => p.load_mw) }] }
+    const span = points.slice(points.findIndex(p => typeof p.load_mw === 'number'))
+    return { mode: 'load', x: span.map(p => Date.parse(p.t)), series: [{ label: 'Load', values: span.map(p => p.load_mw ?? null) }] }
   }, [series])
 }
 
@@ -65,19 +67,25 @@ function IsoTile({ iso, meta }) {
   const chart = useIsoChart(iso.series)
   const label = <>{iso.iso} <span className="u">· {iso.name}</span></>
   return (
-    <Tile span={6} id={iso.key} label={label} hint={`${LOAD_MEANS[iso.key] || ''} ${chart.mode === 'mix' ? 'The chart stacks each fuel\'s output since local midnight.' : 'This operator publishes only its latest mix, so the chart shows load.'}`} meta={<>{!isLive(iso, now) && <Tag tone="warn">delayed</Tag>}<SourceTag meta={meta} showLabel={false} /><span>{time(iso.observed_at)}</span></>}>
+    <Tile span={6} id={iso.key} label={label} hint={`${LOAD_MEANS[iso.key] || ''} ${chart.mode === 'mix' ? 'The chart stacks each fuel\'s output over the hours the operator publishes.' : 'This operator publishes only its latest mix, so the chart shows load and the bar below shows the mix.'}`} meta={<>{!isLive(iso, now) && <Tag tone="warn">delayed</Tag>}<SourceTag meta={meta} showLabel={false} /><span>{time(iso.observed_at)}</span></>}>
       {!iso.mix && !iso.series?.length ? <Empty>no data</Empty> : <>
         <div className="kv">
-          <div><span className="label">Load</span><b>{gw(iso.load_mw)}<small>GW</small></b></div>
+          <div><span className="label">Load · {time(iso.load_at || iso.observed_at)}</span><b>{gw(iso.load_mw)}<small>GW</small></b></div>
           <div><span className="label">Renew.</span><b>{pct(s?.renewable)}</b></div>
           <div><span className="label">Largest</span><b>{s ? FUEL_LABEL[s.top] : '—'}</b></div>
           {iso.price && <div title={iso.price.label}><span className="label">Price</span><b>{num(iso.price.usd_mwh, 2)}<small>$/MWh</small></b></div>}
         </div>
+        <div className="legend"><span>{chart.mode === 'mix' ? 'Generation by fuel' : 'Load'} · GW · from {time(chart.x.length ? new Date(chart.x[0]).toISOString() : null)}</span></div>
         {chart.x.length >= 2
           ? <TimeChart x={chart.x} series={chart.series} stacked={chart.mode === 'mix'} area={chart.mode === 'load'} height={170} format={gwFormat}
               ariaLabel={`${iso.iso} ${chart.mode === 'mix' ? 'generation by fuel' : 'load'} today`} />
           : <Empty>too few intervals today</Empty>}
-        {iso.mix && <FuelLegend mix={iso.mix} />}
+        {iso.mix && <>
+          {/* Operators without mix history get their current mix as a bar, so the load chart is not read as a fuel chart. */}
+          <div className="legend"><span>{chart.mode === 'mix' ? 'GW' : 'Generation by fuel, GW'} at {time(iso.mix_at || iso.observed_at)}</span></div>
+          {chart.mode === 'load' && <MixBar mix={iso.mix} height={10} />}
+          <FuelLegend mix={iso.mix} />
+        </>}
       </>}
     </Tile>
   )

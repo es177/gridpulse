@@ -53,10 +53,11 @@ export function SourceTag({ meta, name, showLabel = true }) {
     meta.label,
     `${STATE_LABEL[state]} · ${meta.cadence}`,
     meta.observed_at && `Observed ${meta.resolution === 'time' || !meta.resolution ? fullDate(meta.observed_at) : observed(meta)}`,
-    meta.fetched_at && `Retrieved ${fullDate(meta.fetched_at)}`,
+    meta.fetched_at && `Retrieved ${fullDate(meta.fetched_at)}${meta.origin === 'snapshot' ? ' (startup snapshot, not yet refetched)' : ''}`,
+    meta.checked_at ? `Last checked ${fullDate(meta.checked_at)}` : 'Not yet checked by this server',
     meta.error && `Last attempt: ${meta.error}`,
   ].filter(Boolean).join('\n') : 'Waiting'
-  const when = meta?.observed_at && (meta.resolution === 'day' || meta.resolution === 'month') ? observed(meta) : age(stamp, now)
+  const when = meta?.observed_at && ['day', 'month', 'year'].includes(meta.resolution) ? observed(meta) : age(stamp, now)
   return (
     <span className="src" title={detail}>
       <span className={`dot ${state}`} aria-label={STATE_LABEL[state]} />
@@ -152,7 +153,7 @@ export function Spark({ values = [], width = 96, height = 20, min, max }) {
 }
 
 /** Horizontal stacked bar of positive output by fuel, 1px gaps between segments. */
-export function MixBar({ mix, height = 8 }) {
+export function MixBar({ mix, height = 8, unit = 'MW' }) {
   const m = displayMix(mix)
   const parts = FUELS.map(f => [f, Math.max(m[f] || 0, 0)]).filter(([, v]) => v > 0)
   const total = parts.reduce((s, [, v]) => s + v, 0)
@@ -161,7 +162,7 @@ export function MixBar({ mix, height = 8 }) {
     <div className="mixbar" style={{ height }} role="img"
       aria-label={parts.map(([f, v]) => `${FUEL_LABEL[f]} ${num(v / total * 100)}%`).join(', ')}>
       {parts.map(([f, v]) => (
-        <span key={f} style={{ flex: v, background: fuelVar(f) }} title={`${FUEL_LABEL[f]} ${num(v)} MW · ${num(v / total * 100, 1)}%`} />
+        <span key={f} style={{ flex: v, background: fuelVar(f) }} title={`${FUEL_LABEL[f]} ${num(v, unit === 'MW' ? 0 : 1)} ${unit} · ${num(v / total * 100, 1)}%`} />
       ))}
     </div>
   )

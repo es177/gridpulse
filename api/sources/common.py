@@ -64,5 +64,7 @@ class Source:
     url: str
     cadence: str
     timeout: float = 20.0    # hard cap on one refresh
-    resolution: str = 'time' # precision of observed_at: 'time', 'day' or 'month'
+    resolution: str = 'time' # precision of observed_at: 'time', 'day', 'month' or 'year'
     carry: Optional[Callable[[dict, Optional[dict]], dict]] = None  # (new, previous) -> merged
+    method: str = ''          # how the upstream is read, e.g. 'JSON API' or 'RSS and HTML listings'
+    endpoints: tuple = ()     # exact upstream addresses the fetcher reads, for anyone checking a figure

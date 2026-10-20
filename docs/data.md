@@ -4,7 +4,7 @@ What each number means and where it can mislead. The UI keeps these to one line 
 
 ## EIA-930 (Grid page, Overview)
 
-- Hourly values are MWh per hour, shown as average MW (and GW). Timestamps are the UTC hour as reported by EIA.
+- Hourly values are MWh per hour, shown as average MW (and GW). Timestamps are hour-ending UTC: a value stamped 03:00 covers 02:00–03:00. Checked against MISO's own five-minute load.
 - Demand arrives about 1 hour after the hour. Net generation, interchange and the US48 fuel mix arrive about 22 hours later, so they carry their own timestamps and their chart lines end earlier.
 - Day-ahead forecasts (DF) are published 3–6 hours ahead by each balancing area. The Lower 48 forecast is a partial sum of the areas that have reported. It runs 2–5% below demand for settled hours and much lower for the latest ones, so it is neither drawn nor compared for Lower 48.
 - CAISO's newest hours in EIA-930 repeat its day-ahead forecast until actuals arrive (typically 3–4 hours). A trailing run where demand equals the forecast exactly is treated as not yet reported, so CAISO's latest hour can lag the others. The Lower 48 total still includes those hours, a difference well under 0.5%.
@@ -37,11 +37,11 @@ What each number means and where it can mislead. The UI keeps these to one line 
 - Estimated output = reported percent × nameplate MWe (EIA-860M, in `api/data/reactors.json`). Actual net output differs with season and plant conditions.
 - Coordinates, licensed MWt and MWe are reference data joined by NRC docket number.
 - Event notification reports are summarized from structured fields and the narrative's one-line all-caps subject heading. The rest of the narrative, which names individuals, is not republished.
-- NRC's bot filter rejects browser-like user agents; requests use an honest client identifier.
+- NRC's bot filter rejects browser-like user agents; requests identify themselves as GridPulse with the HTTP library's own token.
 
 ## Feeds
 
-Publishers, each linked straight to its own site:
+Publishers, each item linking to the original:
 
 - Regulators and agencies: NRC News, NRC event reports (reactor events, scrams and emergencies only), DOE Office of Nuclear Energy, DOE Newsroom, NERC News, EIA Today in Energy and EIA Press Releases.
 - Grid operators: PJM Inside Lines, MISO News, MISO real-time notifications, CAISO emergency notices and ERCOT grid conditions.
@@ -52,7 +52,8 @@ A story is listed only if its headline matches one of six topics (nuclear, relia
 - No CAISO or ERCOT items is the normal state: they appear only during emergencies. ERCOT's dashboard shows only the current condition, so an alert (conservation notice or appeal, or Energy Emergency Alert) becomes one item per state and Central day, stamped with the dashboard's last update, and stays listed after conditions return to normal.
 - MISO labels notification times as UTC, but they are Eastern Standard Time all year and are converted as such. CAISO's notice times carry no zone and are read as Pacific time.
 - NRC News comes from NRC's yearly release listing, which has dates only, so releases are stamped at midnight Eastern.
-- Publishers are fetched in parallel, each with its own timeout of 12 s or less. A publisher that fails is named in the feed and its earlier items are kept.
+- EIA's feeds label times "EST" all year, so in summer an EIA item's time of day can be an hour off; the date is right.
+- Publishers are fetched in parallel, each with its own timeout of 20 s or less inside a 25 s budget. A publisher that fails is named in the feed and its earlier items are kept.
 
 ## Prices
 
@@ -60,7 +61,9 @@ Average revenue per kWh sold, by state and sector, for one month that every stat
 
 ## World
 
-World Nuclear Association table. Operable includes units not currently generating. Construction, planned and proposed capacity are gross MWe; operable capacity is net. Taiwan appears only in the world total.
+World Nuclear Association table: reactors operable, under construction, planned and proposed, and yearly uranium requirements. Operable includes units not currently generating. Operable capacity is net MWe; construction, planned and proposed are gross. Generation and share are net output, mainly from IAEA PRIS. Taiwan appears only in the world total.
+
+Country comparisons add yearly electricity by source from Our World in Data's energy dataset, built from Ember and the Energy Institute (CC BY 4.0). Many countries report gross generation there, so nuclear TWh and share can differ from the WNA figures by a few percent for the same year; the comparison labels each row with its source. Some countries lag a year or more, and the comparison uses the latest year every selected country has. Missing values stay blank.
 
 ## Reference figures
 

@@ -74,6 +74,7 @@ def respond(payload: dict, names, cdn_seconds: int, stale_seconds: int) -> JSONR
     if pending or any(payload['sources'][name]['error'] for name in names):
         cdn_seconds = min(cdn_seconds, UNSETTLED)
     return JSONResponse(payload, background=BackgroundTask(settle, pending) if pending else None, headers={
+        'Access-Control-Allow-Origin': '*',  # public, read-only data
         'Cache-Control': 'no-cache',
         'Vercel-CDN-Cache-Control':
             f'max-age={cdn_seconds}, stale-while-revalidate={stale_seconds}, stale-if-error=604800',
@@ -151,8 +152,9 @@ async def prices():
 
 @app.get('/api/global')
 async def world():
-    entry = await store.get('wna')
-    return respond({'world': entry.data}, ['wna'], 6 * 3600, 7 * 86400)
+    names = ['wna', 'owid']
+    entries = await store.get_many(names)
+    return respond({'world': entries['wna'].data, 'mix': entries['owid'].data}, names, 6 * 3600, 7 * 86400)
 
 
 @app.get('/api/status')

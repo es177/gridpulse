@@ -81,7 +81,7 @@ function FuelTile({ fuel, meta }) {
   const latest = fuel?.series?.at(-1)
   return (
     <Tile label="US generation by fuel" meta={<SourceTag meta={meta} name="EIA-930" />}
-      hint="Where US electricity comes from, hour by hour, about a day behind. Solar rises at midday; gas usually covers the evening peak.">
+      hint="US electricity generation by source, hourly, about a day behind. Solar peaks at midday; gas is the largest source in most hours.">
       {latest ? <>
         <TimeChart x={x} series={series} stacked height={240} format={gwAxis} ariaLabel="US Lower 48 hourly generation by fuel" />
         <div className="legend"><span>GW at {when(latest.t)}</span></div>
@@ -104,7 +104,7 @@ export default function Grid() {
   const us48 = row?.id === 'US48'
 
   const exportCSV = () => {
-    const data = region.series.map(p => ({ hour_utc: p.t, region: region.id, demand_mw: p.d, forecast_mw: p.df, net_generation_mw: p.ng, interchange_mw: p.ti }))
+    const data = region.series.map(p => ({ hour_ending_utc: p.t, region: region.id, demand_mw: p.d, forecast_mw: p.df, net_generation_mw: p.ng, interchange_mw: p.ti }))
     download(`gridpulse-${region.id}-hourly.csv`, toCSV(data, Object.keys(data[0])))
   }
 

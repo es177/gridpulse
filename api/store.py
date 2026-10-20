@@ -30,7 +30,8 @@ log = logging.getLogger('gridpulse')
 @dataclass
 class Entry:
     data: Optional[dict] = None
-    fetched_at: Optional[str] = None     # last successful refresh (UTC ISO)
+    fetched_at: Optional[str] = None     # when the data was downloaded from the publisher (UTC ISO)
+    origin: Optional[str] = None         # 'live' if this server downloaded it, 'snapshot' if loaded at startup
     checked_at: Optional[str] = None     # last attempt (UTC ISO)
     error: Optional[str] = None
     next_due: float = float('-inf')      # monotonic time of the next allowed attempt
@@ -49,6 +50,7 @@ class Store:
             if isinstance(saved.get(name), dict) and saved[name].get('data'):
                 entry.data = saved[name]['data']
                 entry.fetched_at = saved[name].get('fetched_at')
+                entry.origin = 'snapshot'
 
     async def _refresh(self, source: Source) -> None:
         entry = self.entries[source.name]
@@ -60,7 +62,7 @@ class Store:
                 raise ValueError('fetch returned no payload')
             if source.carry:
                 data = source.carry(data, entry.data)
-            entry.data, entry.fetched_at, entry.error = data, now_iso(), None
+            entry.data, entry.fetched_at, entry.origin, entry.error = data, now_iso(), 'live', None
             entry.next_due = time.monotonic() + source.ttl
         except Exception as exc:  # any upstream failure keeps the last good data
             # Never echo upstream bodies or URLs (they can carry API keys).
@@ -110,10 +112,13 @@ class Store:
             'label': source.label,
             'url': source.url,
             'cadence': source.cadence,
+            'method': source.method,
+            'endpoints': list(source.endpoints),
             'resolution': source.resolution,
             'stale_after': source.stale_after,
             'observed_at': (entry.data or {}).get('observed_at'),
             'fetched_at': entry.fetched_at,
+            'origin': entry.origin if entry.data is not None else None,
             'checked_at': entry.checked_at,
             'error': entry.error,
             'has_data': entry.data is not None,

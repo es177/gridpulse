@@ -15,7 +15,7 @@ warnings.filterwarnings('ignore', message='Using `httpx` with `starlette.testcli
 from fastapi.testclient import TestClient  # noqa: E402
 
 import index  # noqa: E402
-from sources import eia, feeds, nrc, wna  # noqa: E402
+from sources import eia, feeds, nrc, owid, wna  # noqa: E402
 
 NOW = datetime(2026, 10, 13, 2, 0, tzinfo=timezone.utc)  # fixtures are from October 2026
 DATA = {
@@ -27,6 +27,8 @@ DATA = {
     'feeds': lambda: feeds.merge([feeds.parse_feed((FIX / 'feeds/wnn.xml').read_bytes(), 'World Nuclear News', NOW)]
                                  + [ValueError('offline')] * (len(feeds.FEEDS) - 1)),
     'wna': lambda: wna.parse_world((FIX / 'wna/wna.html').read_text()),
+    # The trimmed fixture holds five WNA countries; production requires 25.
+    'owid': lambda: owid.parse_mix((FIX / 'owid/owid-energy-data.csv').read_text(), wna.ISO3.values(), minimum=3),
 }
 
 
@@ -73,9 +75,23 @@ class ApiTest(unittest.TestCase):
         self.assertTrue(dates)
         self.assertEqual(dates, sorted(dates, reverse=True))
 
-    def test_prices_and_world(self):
+    def test_prices(self):
         self.assertGreaterEqual(len(self.get('/api/prices')['prices']['rows']), 48)
-        self.assertGreaterEqual(len(self.get('/api/global')['world']['countries']), 25)
+
+    def test_global_joins_the_fleet_table_and_the_yearly_mix(self):
+        body = self.get('/api/global')
+        self.assertEqual(set(body['sources']), {'wna', 'owid'})
+        self.assertGreaterEqual(len(body['world']['countries']), 25)
+        codes = {c['iso3'] for c in body['world']['countries']}
+        mix = body['mix']
+        self.assertEqual((mix['unit'], mix['observed_at']), ('TWh', '2025-12-31T00:00:00+00:00'))
+        self.assertIn('WLD', mix['countries'])
+        self.assertTrue(set(mix['countries']) - {'WLD'} <= codes)
+        france = mix['countries']['FRA']
+        self.assertEqual(france['name'], 'France')
+        self.assertEqual(set(france['years'][-1]), {'year', 'gen', 'nuclear', 'coal', 'gas', 'hydro', 'wind',
+                                                    'solar', 'other', 'share', 'carbon', 'per_capita'})
+        self.assertIn('max-age=21600,', self.client.get('/api/global').headers['vercel-cdn-cache-control'])
 
     def test_query_strings_redirect_to_the_bare_path(self):
         response = self.client.get('/api/grid?bust=1', follow_redirects=False)
@@ -96,9 +112,11 @@ class ApiTest(unittest.TestCase):
     def test_status_reports_every_source(self):
         body = self.get('/api/status')
         self.assertEqual(set(body['sources']), set(index.SOURCES))
-        self.assertTrue(all(m['resolution'] in ('time', 'day', 'month') for m in body['sources'].values()))
+        self.assertTrue(all(m['resolution'] in ('time', 'day', 'month', 'year') for m in body['sources'].values()))
         wna_meta = body['sources']['wna']
-        self.assertEqual((wna_meta['observed_at'], wna_meta['resolution']), ('2026-10-08T00:00:00+00:00', 'day'))
+        self.assertEqual((wna_meta['observed_at'], wna_meta['resolution']), ('2026-10-16T00:00:00+00:00', 'day'))
+        owid_meta = body['sources']['owid']
+        self.assertEqual((owid_meta['observed_at'], owid_meta['resolution']), ('2025-12-31T00:00:00+00:00', 'year'))
 
 
 if __name__ == '__main__':

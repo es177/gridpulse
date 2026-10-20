@@ -19,8 +19,8 @@ A live console for the US electricity grid and nuclear fleet, built only on free
 | Reactors | Every operating US unit: power today, change, 365-day history, map | NRC daily power reactor status | Each business day |
 | Feed | Significant events only: grid emergencies, reactor trips, regulatory decisions, reliability assessments, major milestones; tagged by topic | NRC, NERC, DOE, EIA, PJM, MISO, CAISO, ERCOT, World Nuclear News | As published |
 | Prices | Retail price by state and sector with year-over-year change | EIA retail sales | Monthly, ~3 months behind |
-| World | Nuclear fleet by country | World Nuclear Association | Monthly |
-| Sources | Status of every source, computed in the browser | — | — |
+| World | Nuclear fleet by country; tick up to six countries to compare fleet, generation mix, nuclear share, carbon intensity and trends over time | World Nuclear Association; Ember and Energy Institute via Our World in Data | Monthly; yearly |
+| Sources | Status of every source, the method, the public data API and the exact upstream endpoints | — | — |
 
 Every number carries the time its source observed it. New to grid data? Switch on **explain** (or press `e`) for a plain-language line under every figure. Filters live in the URL, so any view can be shared. Keyboard: `g` then a letter switches pages (`g o`, `g r`, …), `/` focuses search, `r` refreshes, `?` lists shortcuts.
 
@@ -36,7 +36,7 @@ Every number carries the time its source observed it. New to grid data? Switch o
 - **Refreshes finish.** A response that starts a refresh keeps its serverless instance working on it after replying, and is cached briefly until the fresh data lands.
 - **Cold starts.** `api/data/snapshot.json` seeds a new instance. A weekly GitHub Action refreshes it from every source and commits it, which also checks that every parser still works.
 - **CDN.** Responses carry `stale-while-revalidate` and `stale-if-error`, so visitors are served from the edge and an origin error keeps the last response online.
-- **Honest time.** Status is computed in the browser from source timestamps, so a cached response cannot show a frozen "current".
+- **Timestamps.** Status is computed in the browser from each source's observation time, so a cached response cannot show an old reading as current.
 
 What each figure means, and where it can mislead, is in [docs/data.md](docs/data.md).
 
@@ -56,6 +56,22 @@ cd frontend && npm install && npm run dev    # http://localhost:5173
 ```
 
 Set `EIA_API_KEY` ([free](https://www.eia.gov/opendata/register.php), see `.env.example`) for reliable EIA access. Without it the shared `DEMO_KEY` allows about 10 requests an hour, after which GridPulse switches to EIA's slower keyless endpoints.
+
+## Get the data
+
+Every page reads public JSON routes that anyone can use, from a script or another site (CORS is open):
+
+| Route | Contents |
+|---|---|
+| `/api/grid` | EIA hourly demand, forecast, net generation and interchange by region (72 h); US48 generation by fuel (96 h) |
+| `/api/live` | Six grid operators: latest load, fuel mix and price; today in 15-minute points |
+| `/api/reactors` | Every operating US reactor with a year of NRC daily power readings |
+| `/api/feed` | Filtered news and NRC plant events with links to the originals |
+| `/api/prices` | Average retail price by state and sector |
+| `/api/global` | World Nuclear Association fleet table; yearly electricity by source per country |
+| `/api/status` | Every source: observation time, download time, whether this server downloaded it, refresh interval, last error, and the exact upstream endpoints |
+
+The Grid page and the World comparison also export CSV.
 
 ## Deploy your own
 
@@ -84,7 +100,7 @@ Tests run offline against recorded fixtures. CI runs all three on every push to 
 
 ## Data
 
-The data belongs to its publishers: the US Energy Information Administration, the US Nuclear Regulatory Commission, CAISO, ERCOT, SPP, MISO, NYISO, ISO New England, the World Nuclear Association, and the news outlets in the feed, whose items link to the original articles. GridPulse is not affiliated with any of them, and its figures are not official.
+The data belongs to its publishers: the US Energy Information Administration, the US Nuclear Regulatory Commission, CAISO, ERCOT, SPP, MISO, NYISO, ISO New England, the World Nuclear Association, Ember and the Energy Institute (via Our World in Data, CC BY 4.0), and the news publishers in the feed, whose items link to the originals. GridPulse is not affiliated with any of them, and its figures are not official.
 
 ## License
 

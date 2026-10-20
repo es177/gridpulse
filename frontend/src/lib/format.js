@@ -43,6 +43,7 @@ export const zone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'l
 /** Axis tick labels: clock times within a day, dates across days, months across months. */
 export function tick(seconds, step) {
   const d = new Date(seconds * 1000)
+  if (step >= 360 * 86400) return String(d.getUTCFullYear())
   if (step >= 28 * 86400) return monthShort.format(d)
   if (step >= 86400 || (d.getHours() === 0 && d.getMinutes() === 0)) return dayOnly.format(d)
   return clock.format(d)
@@ -68,6 +69,7 @@ export function month(ym) {
 export function observed(meta) {
   const iso = meta?.observed_at
   if (!iso) return DASH
+  if (meta.resolution === 'year') return iso.slice(0, 4)
   if (meta.resolution === 'month') return month(iso.slice(0, 7))
   if (meta.resolution === 'day') return date(iso.slice(0, 10))
   return when(iso)

@@ -79,7 +79,7 @@ export default function Feed() {
         {res.data && <span className="count">{shown.length}/{all.length}</span>}
       </div>
       <Board>
-        <Tile flush label="Updates" hint="Significant news straight from regulators, grid operators and agencies, newest first. Routine notices, meetings and promotions are filtered out; plant events are the NRC's reports of reactor trips, safety problems and emergencies."
+        <Tile flush label="Updates" hint="News and notices from regulators, grid operators and agencies, newest first. Meetings, training and promotional posts are filtered out. Plant events are NRC reports of reactor trips, safety problems and emergencies."
           meta={<><SourceTag meta={res.data?.sources?.feeds} name="feeds" /><SourceTag meta={res.data?.sources?.nrc_events} name="NRC events" /></>}>
           {!res.data ? <Skeleton height={360} />
             : !shown.length ? <Empty>no match · <button className="btn bare" type="button" onClick={clear}>clear</button></Empty>

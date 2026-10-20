@@ -24,6 +24,8 @@
   --fuel-storage: #c95688;
   --fuel-imports: #a3a3a3;
   --fuel-other: #d0d0d0;
+  /* Countries in a comparison, by selection slot; validated like the fuels. */
+  --cmp-1: #2a78d6; --cmp-2: #d0642e; --cmp-3: #15946a; --cmp-4: #b98400; --cmp-5: #c95688; --cmp-6: #008300;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --header-h: 45px; /* measured at runtime in App.jsx */
@@ -52,6 +54,7 @@
     --fuel-storage: #c7618b;
     --fuel-imports: #5e5e5e;
     --fuel-other: #3d3d3d;
+    --cmp-1: #3987e5; --cmp-2: #d95926; --cmp-3: #199e70; --cmp-4: #c98500; --cmp-5: #d55181; --cmp-6: #008300;
   }
 }
 
@@ -250,7 +253,8 @@ kbd { display: inline-block; min-width: 18px; padding: 0 4px; border: 1px solid 
 .legend i.line { width: 12px; height: 0; border-top: 2px solid; border-radius: 0; }
 .legend i.dash { width: 12px; height: 0; border-top: 2px dashed; border-radius: 0; }
 .legend b { color: var(--fg); font-weight: 500; }
-.chart + .legend, .legend + .chart { margin-top: 10px; }
+.chart + .legend, .legend + .chart, .chart + .empty + .legend { margin-top: 10px; }
+.legend + .legend, .legend + .mixbar, .mixbar + .legend { margin-top: 6px; }
 .mixbar { display: flex; gap: 1px; height: 8px; min-width: 80px; }
 .mixbar > span { display: block; min-width: 1px; }
 .spark { display: block; overflow: visible; }
@@ -302,3 +306,21 @@ kbd { display: inline-block; min-width: 18px; padding: 0 4px; border: 1px solid 
   .input { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { .spin, .skeleton { animation: none; } }
+
+/* ---------- Country comparison ---------- */
+.pick { width: 28px; text-align: center; }
+.pick input { margin: 0; accent-color: var(--fg); cursor: pointer; }
+.swatch { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 1px; vertical-align: middle; }
+th .swatch { vertical-align: 0; }
+.mixrows { display: grid; grid-template-columns: minmax(90px, max-content) minmax(0, 1fr) max-content; gap: 6px 12px; align-items: center; }
+.mixrows .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 760px) { table.compare td:first-child { white-space: normal; min-width: 110px; max-width: 140px; height: auto; padding-top: 4px; padding-bottom: 4px; font-size: 12px; } }
+
+/* ---------- Method ---------- */
+.steps { display: grid; gap: 10px; margin: 0; }
+.steps div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; }
+.steps dt { font: 500 11px/1.5 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg-3); }
+.steps dd { margin: 0; color: var(--fg-2); }
+.rows > li.route { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; padding: 6px 12px; }
+td.wrap.mono { font-size: 12px; word-break: break-all; }
+.note { margin: 12px 0 0; font: 11px/1.5 var(--mono); color: var(--fg-3); }

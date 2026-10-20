@@ -156,5 +156,32 @@ class StoreTest(unittest.TestCase):
         self.assertEqual(meta['error'], 'invalid data: upstream down')
 
 
+    def test_origin_says_who_downloaded_the_data(self):
+        path = Path(tempfile.mkdtemp()) / 'snapshot.json'
+        path.write_text(json.dumps({'a': {'data': {'observed_at': 'x', 'v': 1}, 'fetched_at': '2026-10-01T00:00:00+00:00'}}))
+        outcome = {'fail': True}
+
+        async def fetch(client):
+            if outcome['fail']:
+                raise ValueError('upstream down')
+            return {'observed_at': 'y', 'v': 2}
+
+        async def go():
+            s = store.Store({'a': source('a', fetch)}, path)
+            seeded = s.meta('a')
+            await s.get('a', force=True)               # failed: the snapshot copy is not relabeled
+            failed = s.meta('a')
+            outcome['fail'] = False
+            await s.get('a', force=True)
+            return seeded, failed, s.meta('a')
+
+        with self.assertLogs('gridpulse', 'WARNING'):
+            seeded, failed, live = run(go())
+        self.assertEqual((seeded['origin'], seeded['checked_at']), ('snapshot', None))
+        self.assertEqual((failed['origin'], failed['fetched_at']), ('snapshot', '2026-10-01T00:00:00+00:00'))
+        self.assertIsNotNone(failed['checked_at'])
+        self.assertEqual(live['origin'], 'live')
+        self.assertGreater(live['fetched_at'], '2026-10-01T00:00:00+00:00')
+
 if __name__ == '__main__':
     unittest.main()
