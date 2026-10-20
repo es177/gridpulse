@@ -41,6 +41,14 @@ class StatusTest(unittest.TestCase):
         odd = next(u for u in result['units'] if u['name'] == 'Odd')
         self.assertIsNone(odd['power'][-1])
 
+    def test_rows_with_unreadable_dates_are_skipped(self):
+        rows = [f'1/2/2026 12:00:00 AM|Unit {i}|100' for i in range(85)]
+        rows += ['|Blank|100', '13/45/2026 12:00:00 AM|Bad|100', '1/1/2026 12:00:00 AM|Unit 0|90']
+        result = nrc.parse_status('\n'.join(rows))
+        self.assertEqual(result['dates'], ['2026-01-01', '2026-01-02'])
+        self.assertNotIn('Bad', {u['name'] for u in result['units']})
+        self.assertEqual(next(u for u in result['units'] if u['name'] == 'Unit 0')['power'], [90, 100])
+
 
 class DirectoryTest(unittest.TestCase):
     def test_includes_part_52_dockets(self):
@@ -120,6 +128,19 @@ class EventsTest(unittest.TestCase):
             self.assertNotIn('Redacted', item['title'] + item['summary'])
             self.assertLessEqual(len(item['summary']), 280)
 
+
+    def test_each_cited_cfr_section_is_its_own_summary_part(self):
+        # Waterford 3, EN 58501 (Oct 2026) cites two sections in one cell.
+        two = '50.72(b)(2)(iv)(B) - RPS Actuation - Critical\n 50.72(b)(3)(iv)(A) - Valid Specif Sys Actuation\n'
+        page = read('events_20261009.html')
+        start = page.index('10 CFR Section:<br>', page.index('id="en58484"')) + len('10 CFR Section:<br>')
+        markup = page[:start] + two + page[page.index('</div>', start):]
+        event = next(i for i in nrc.parse_events(markup, 'u') if i['id'] == 'EN-58484')
+        self.assertTrue(event['summary'].startswith(
+            'Power Reactor · RPS Actuation - Critical · Valid Specif Sys Actuation · Non Emergency · Unit 1'))
+        part70 = nrc.CFR_CODE.split('PART 70 APP A (b)(1) - Unanalyzed Condition')
+        self.assertEqual([d for d in part70 if d], ['Unanalyzed Condition'])
+        self.assertEqual(nrc.CFR_CODE.split('Agreement State'), ['Agreement State'])
 
     def test_feed_keeps_reactor_events_scrams_and_emergencies_only(self):
         pages = [nrc.parse_events(read(f'events_{day}.html'), 'u') for day in ('20261009', '20261008')]

@@ -2,6 +2,7 @@ import asyncio
 import json
 import sys
 import unittest
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -12,6 +13,8 @@ sys.path.insert(0, str(ROOT / 'api' / 'sources'))
 import feeds  # noqa: E402
 
 FIXTURES = ROOT / 'tests' / 'fixtures' / 'feeds'
+# What a parser may raise on a payload that is not what the publisher normally sends.
+BROKEN = (ValueError, KeyError, TypeError, IndexError, AttributeError, ET.ParseError)
 NOW = datetime(2026, 10, 19, 12, 0, tzinfo=timezone.utc)
 FILES = {'World Nuclear News': 'wnn.xml', 'NRC News': 'nrc_releases.html', 'DOE Newsroom': 'doe_newsroom.xml',
          'NERC News': 'nerc.json', 'EIA Today in Energy': 'eia_tie.xml', 'EIA Press Releases': 'eia_press.xml',
@@ -108,6 +111,17 @@ class FeedTest(unittest.TestCase):
         for subject in ('Maximum Generation Alert', 'Maximum Generation Emergency Event Step 2a', 'Energy Emergency Alert Level 1'):
             self.assertEqual(feeds.topics(subject, 'MISO Notifications'), ['reliability'], subject)
 
+    def test_follow_ups_and_car_batteries_are_not_events(self):
+        # MISO cancels an advisory with its own notice (Oct 19, 2026); like a termination it is a follow-up.
+        self.assertEqual(feeds.topics('Capacity Advisory Declaration Cancellation', 'MISO Notifications'), [])
+        self.assertEqual(feeds.topics('Capacity Advisory Declaration', 'MISO Notifications'), ['reliability'])
+        # "Battery electric" means cars (EIA Today in Energy, Oct 19, 2026), not grid storage.
+        self.assertEqual(feeds.topics('Hybrid sales rise while battery electric sales remain lower after tax credit '
+                                      'expiration', 'EIA Today in Energy'), [])
+        self.assertEqual(feeds.topics('Battery electric vehicles add to power demand'), ['demand'])
+        self.assertEqual(feeds.topics('Battery storage capacity doubles in ERCOT'), ['storage'])
+        self.assertEqual(feeds.topics('Grid batteries electrify the evening peak'), ['storage'])
+
     def test_eia_missing_year_and_padded_dates(self):
         self.assertEqual(parse('EIA Today in Energy')[0]['published'], '2026-10-15T14:00:00+00:00')  # 09:00 EST
         self.assertEqual(feeds.parse_date('Fri, 09 Oct  09:00:00 EST', NOW).isoformat(), '2026-10-09T14:00:00+00:00')
@@ -159,6 +173,15 @@ class FeedTest(unittest.TestCase):
                        lambda: feeds.parse_feed(b'<rss><channel></channel></rss>', 'Empty', NOW)):
             with self.assertRaises((ValueError, KeyError, TypeError)):
                 broken()
+
+    def test_error_pages_empty_bodies_and_rate_limits_raise_for_every_publisher(self):
+        bodies = [b'', b'<!DOCTYPE html><html><head><title>503 Service Unavailable</title></head><body></body></html>',
+                  b'<html><head><title>Just a moment...</title></head><body><p>Checking</p></body></html>',
+                  b'{"error": {"code": "OVER_RATE_LIMIT", "message": "rate limit exceeded"}}', b'{}', b'Too Many Requests']
+        for feed in feeds.FEEDS:
+            for body in bodies:
+                with self.assertRaises(BROKEN, msg=f'{feed.name}: {body[:20]!r}'):
+                    feed.parse(body, feed.name, NOW)
 
     def test_ercot_emergency_becomes_one_item_per_state_and_day(self):
         moment = datetime(2026, 10, 19, 7, 40, 53, tzinfo=timezone.utc)  # 02:40 CDT, the fixture's update time

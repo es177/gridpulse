@@ -30,7 +30,7 @@ META = {
     'caiso': {'label': 'CAISO', 'name': 'California ISO', 'url': 'https://www.caiso.com/todays-outlook', 'cadence': '5-minute'},
     'ercot': {'label': 'ERCOT', 'name': 'Electric Reliability Council of Texas', 'url': 'https://www.ercot.com/gridmktinfo/dashboards', 'cadence': '5-minute'},
     'spp': {'label': 'SPP', 'name': 'Southwest Power Pool', 'url': 'https://portal.spp.org/pages/generation-mix', 'cadence': '5-minute'},
-    'miso': {'label': 'MISO', 'name': 'Midcontinent ISO', 'url': 'https://www.misoenergy.org/markets-and-operations/real-time--market-data/real-time-displays/', 'cadence': '5-minute'},
+    'miso': {'label': 'MISO', 'name': 'Midcontinent ISO', 'url': 'https://www.misoenergy.org/markets-and-operations/real-time--market-data/markets-displays/', 'cadence': '5-minute'},
     'nyiso': {'label': 'NYISO', 'name': 'New York ISO', 'url': 'https://www.nyiso.com/real-time-dashboard', 'cadence': '5-minute'},
     'isone': {'label': 'ISO-NE', 'name': 'ISO New England', 'url': 'https://www.iso-ne.com/isoexpress/', 'cadence': '~5-minute'},
 }
@@ -131,11 +131,16 @@ def _build(key: str, loads: list, mixes: list, now: datetime | None = None, pric
             series.append({'t': utc_iso(mark), 'load_mw': _round(load),
                            'mix': {k: _round(v) for k, v in (mix or {}).items()}})
         mark += STEP
+    # Series points sit on quarter-hour marks and hold the latest value at or before each mark.
+    # Load and mix often arrive one interval apart (MISO's load trails its mix by 5 minutes), so
+    # each latest value carries its own time; observed_at is the newer of the two.
     return {
         'iso': label, 'name': META[key]['name'], 'tz': _ZONES[key],
         'observed_at': utc_iso(latest), 'interval_minutes': interval,
         'load_mw': _round(loads[-1][1]) if loads else None,
+        'load_at': utc_iso(loads[-1][0]) if loads else None,
         'mix': {k: _round(v) for k, v in latest_mix.items()},
+        'mix_at': utc_iso(mixes[-1][0]),
         'series': series, 'price': price, 'source_url': source_url,
     }
 

@@ -58,7 +58,7 @@ TOPICS = {
     'generation': r'\bsolar\b|\bwind (?:power|farms?|generation|energy|capacity|turbines?)\b|offshore wind|geothermal'
                   r'|power plants?|gas[- ]fired|coal[- ]fired|coal plants?|generat(?:ion|ing) capacity'
                   r'|electricity generation|retire',
-    'storage': r'\bstorage\b|batter(?:y|ies)|pumped hydro',
+    'storage': r'\bstorage\b|batter(?:y|ies)(?! electric\b)|pumped hydro',  # not "battery electric" cars
 }
 TOPIC_PATTERNS = {name: re.compile(pattern, re.I) for name, pattern in TOPICS.items()}
 # Housekeeping, promotion and opinion: never listed, whoever publishes it.
@@ -90,7 +90,7 @@ RULES = {
         'implies': 'reliability',
         'major': re.compile(r'^(?:Maximum Generation (?:Emergency )?(?:Warning|Alert|Event)|Energy Emergency'
                             r'|Capacity Advisory Declaration)', re.I),
-        'noise': re.compile(r'Termination|^Updated:', re.I)},
+        'noise': re.compile(r'Termination|Cancell?ation|^Updated:', re.I)},  # follow-ups, as for CAISO
     'CAISO Emergency Notices': {'implies': 'reliability'},
     'ERCOT Grid Conditions': {'implies': 'reliability'},
 }
@@ -249,8 +249,11 @@ def parse_caiso(raw: bytes | str, source: str = 'CAISO Emergency Notices', now: 
     """CAISO's emergency notices for the last 90 days, without links or time zone: times are
     Pacific wall clock. Routine maintenance restrictions and system tests are dropped, and
     no notices at all is the normal state."""
+    notices = json.loads(raw)
+    if not isinstance(notices, list):  # an error envelope must not read as "no emergencies"
+        raise ValueError(f'{source} payload is not a list of notices')
     entries = []
-    for notice in json.loads(raw):
+    for notice in notices:
         # Follow-ups repeat the event they belong to; one item per emergency is enough.
         if notice['EventType'] in CAISO_ROUTINE or FOLLOW_UP.match(notice.get('MessageSubject') or ''):
             continue
@@ -302,14 +305,17 @@ class Feed:
         return '.'.join(urlsplit(self.url).hostname.split('.')[-2:])
 
 
+# Timeouts leave room over the slowest of 10 calls measured in Oct 2026 while every source refreshed
+# at once: WNN up to 6.5 s (alone ~1.1 s); eia.gov answers its RSS only after 8-10 s; energy.gov
+# usually answers in 0.3 s but stalled for a minute (13-15 s, once 40 s).
 FEEDS = [
-    Feed('World Nuclear News', 'https://www.world-nuclear-news.org/rss', parse_feed),
+    Feed('World Nuclear News', 'https://www.world-nuclear-news.org/rss', parse_feed, timeout=12),  # ~280 KB
     Feed('NRC News', NRC_RELEASES, parse_nrc_releases, fetch=fetch_nrc_releases),
-    Feed('DOE Nuclear Energy', 'https://www.energy.gov/ne/rss.xml', parse_feed),  # RSS served as text/html
-    Feed('DOE Newsroom', 'https://www.energy.gov/newsroom/rss.xml', parse_feed),
+    Feed('DOE Nuclear Energy', 'https://www.energy.gov/ne/rss.xml', parse_feed, timeout=20),  # RSS served as text/html
+    Feed('DOE Newsroom', 'https://www.energy.gov/newsroom/rss.xml', parse_feed, timeout=20),
     Feed('NERC News', 'https://www.nerc.com/api/search/news?t=Headlines&pg=1', parse_nerc),
-    Feed('EIA Today in Energy', 'https://www.eia.gov/rss/todayinenergy.xml', parse_feed, timeout=15),  # often 9-10 s
-    Feed('EIA Press Releases', 'https://www.eia.gov/rss/press_rss.xml', parse_feed, timeout=15),  # often 9-10 s
+    Feed('EIA Today in Energy', 'https://www.eia.gov/rss/todayinenergy.xml', parse_feed, timeout=20),
+    Feed('EIA Press Releases', 'https://www.eia.gov/rss/press_rss.xml', parse_feed, timeout=20),
     Feed('PJM Inside Lines', 'https://insidelines.pjm.com/feed/', parse_feed),
     Feed('MISO News', MISO + '/api/News/GetNews', parse_miso_news, timeout=12),  # ~320 KB with article bodies
     Feed('MISO Notifications', MISO + '/api/topicnotifications/getrecentnotifications', parse_miso_notices,

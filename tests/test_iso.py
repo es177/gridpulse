@@ -1,7 +1,7 @@
 import json
 import sys
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -175,6 +175,20 @@ class BuildTest(unittest.TestCase):
             iso._build('spp', [(t, 10.0)], [], NOW)
         with self.assertRaises(ValueError):
             iso._build('spp', [], [(t, {'wind': 0.0})], NOW)
+
+    def test_latest_load_and_mix_keep_their_own_times(self):
+        # MISO, 19 Oct 2026 22:58 EST: fuel mix for 22:55, total load only through 22:50.
+        mark = datetime(2026, 10, 20, 3, 45, tzinfo=timezone.utc)
+        loads = [(mark + timedelta(minutes=m), 70000.0 + m) for m in (-5, 0, 5)]
+        r = iso._build('miso', loads, [(mark + timedelta(minutes=10), {'coal': 24123.0})], mark + timedelta(minutes=13))
+        self.assertEqual((r['observed_at'], r['mix_at'], r['load_at'], r['load_mw']),
+                         ('2026-10-20T03:55:00+00:00', '2026-10-20T03:55:00+00:00', '2026-10-20T03:50:00+00:00', 70005.0))
+        # The chart point at a mark is the reading at that mark, not one from later in the quarter hour.
+        self.assertEqual(r['series'][-1], {'t': '2026-10-20T03:45:00+00:00', 'load_mw': 70000.0, 'mix': {}})
+        isone = iso.parse_isone(load('isone_genfuelmix.json'), load('isone_systemload.json'), NOW)
+        self.assertEqual(isone['load_at'], isone['observed_at'])
+        self.assertLess(isone['mix_at'], isone['load_at'])
+        self.assertIsNone(iso.parse_ercot(load('ercot_fuel_mix.json'), None, None, NOW)['load_at'])
 
     def test_registry_matches_meta(self):
         self.assertEqual(list(iso.ISOS), list(iso.META))
